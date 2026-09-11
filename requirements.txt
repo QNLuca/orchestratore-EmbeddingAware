@@ -1,0 +1,25 @@
+python-dotenv
+
+#Framework per code e messaggistica
+rq==1.15.1
+redis==5.0.1
+
+#SDK D-Wave
+dwave-neal==0.6.0
+dwave-tabu==0.5.0
+dwave-hybrid==0.6.10
+dwave-networkx==0.8.14
+
+#Librerie scientifiche
+numpy>=1.23.5
+scipy>=1.10.0
+networkx>=3.0
+scikit-learn>=1.7.2
+pandas>=2.3.3
+
+#FastAPI
+requests>=2.28.0
+fastapi>=0.100.0
+
+#standard for minimal dependencies
+uvicorn[standard]>=0.20.0

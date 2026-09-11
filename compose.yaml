@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: subqubo-api
+    ports:
+      - "8000:8000"  #mappa la porta 8000 del container su macchina locale
+    depends_on:
+      - redis
+    networks:
+      - hybrid_net #rete interna condivisa da servizi app
+      
+  redis:
+    image: redis:alpine
+    container_name: subqubo-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - hybrid_net
+
+  worker-cpu:
+    build: .
+    volumes:
+      - .:/app  # Mappa la cartella locale dentro il container
+    command: python worker.py
+    depends_on:
+      redis:
+        condition: service_started
+    deploy:
+      replicas: 2 #per scalare i worker
+    networks:
+      - hybrid_net
+      
+  worker-qpu:
+    build: .
+    volumes:
+      - .:/app  #mappa la cartella locale dentro il container
+    command: python worker.py
+    depends_on:
+      redis:
+        condition: service_started
+    deploy:
+      replicas: 1  #numero di gestori code QPU
+    networks:
+      - hybrid_net
+
+  orchestrator:
+    build: .
+    container_name: subqubo-orchestrator
+    volumes:
+      - .:/app
+    command: python orchestrator.py
+    depends_on:
+      redis:
+        condition: service_started
+      worker-cpu:
+        condition: service_started
+      worker-qpu:
+        condition: service_started
+    networks:
+      - hybrid_net
+
+networks:
+  hybrid_net:
+    driver: bridge
