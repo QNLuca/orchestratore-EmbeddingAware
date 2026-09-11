@@ -1,6 +1,6 @@
 # QUBO Orchestrator
 
-Orchestratore sviluppato con **FastAPI** e **Redis** per l'elaborazione, la decomposizione di problemi di ottimizzazione combinatoria BQM/QUBO derivati da file `.lp` (ad es. [QPLIB](https://qplib.zib.de)).
+Orchestratore sviluppato con **FastAPI** e **Redis** per l'elaborazione e/o la decomposizione di problemi di ottimizzazione combinatoria BQM/QUBO derivati da file `.lp` (ad es. [QPLIB](https://qplib.zib.de)).
 
 Il sistema coordina tramite dinamiche di routing risorse classiche (CPU/Tabu/SA) e Quantum Annealing (D-Wave QPU) adottando un innovativo sistema **embedding-aware** per valutare la migliore configurazione d'esecuzione per problemi o eventuali sottoproblemi sub-QUBO.
 
