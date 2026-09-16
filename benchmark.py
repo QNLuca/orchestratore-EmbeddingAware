@@ -5,7 +5,7 @@ import dwave.graphs as dnx
 
 from orchestrator import EmbeddingAwareOrchestrator
 from subQUBO import SubQUBO
-from policies.base import BasePolicy
+from policies.basePolicy import BasePolicy
 from policies.alwaysCPU import AlwaysCPUPolicy
 from policies.alwaysQPU import AlwaysQPUEmbeddablePolicy
 from policies.kerberos import KerberosPolicy
@@ -13,7 +13,7 @@ from policies.qbsolv import QBSolvPolicy
 from policies.mqt import MQTQAOPolicy
 from policies.onlyMyFeaturesBased import OnlyMyFeaturesBasedPolicy
 
-def run_comparative_suite(bqm: Union[dimod.BinaryQuadraticModel, SubQUBO], orchestratorEA: EmbeddingAwareOrchestrator, meta: Optional[Dict], target_graph=None):
+def run_comparative_suite(bqm: Union[dimod.BinaryQuadraticModel, SubQUBO], orchestratorEA: EmbeddingAwareOrchestrator, meta: Optional[Dict], target_graph=None, max_iter: Optional[int] = 5, convergence: Optional[int] = 2):
     if isinstance(bqm, SubQUBO):
         mybqm = bqm.bqm
     else:
@@ -35,12 +35,12 @@ def run_comparative_suite(bqm: Union[dimod.BinaryQuadraticModel, SubQUBO], orche
 
     #istanzio policy
     pipeline_policies: List[BasePolicy] = [
-        AlwaysCPUPolicy(subproblem_size=subproblem_size, max_iter=5, convergence=3),
-        KerberosPolicy(subproblem_size=subproblem_size, max_iter=5, convergence=3),
-        QBSolvPolicy(subproblem_size=subproblem_size, max_iter=5, convergence=3),
-        MQTQAOPolicy(subproblem_size=subproblem_size, max_iter=5, convergence=3),
-        AlwaysQPUEmbeddablePolicy(subproblem_size=subproblem_size, max_iter=5, convergence=3),
-        OnlyMyFeaturesBasedPolicy(subproblem_size=subproblem_size, max_iter=5, convergence=3),
+        AlwaysCPUPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
+        #KerberosPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
+        #QBSolvPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
+        #MQTQAOPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
+        #AlwaysQPUEmbeddablePolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
+        #OnlyMyFeaturesBasedPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
     ]
 
     print(f"AVVIO BENCHMARK COMPARATIVO ROUTING POLICY (BQM N={len(bqm.variables)})")
@@ -64,5 +64,7 @@ def run_comparative_suite(bqm: Union[dimod.BinaryQuadraticModel, SubQUBO], orche
             res["best_energy"] = -res["best_energy"]
 
         results.append(res)
+
+    print(f"BENCHMARK COMPARATIVO COMPLETATO (BQM N={len(bqm.variables)})")
 
     return results

@@ -3,8 +3,37 @@ from typing import Any, Dict, Optional
 import dimod
 import hybrid
 
-from policies.routerPolicies import ConfigurableRouterSampler
-from policies.base import BasePolicy
+from policies.basePolicy import BasePolicy
+from policies.baseRouter import BaseRouter
+
+class AlwaysCPURouter(BaseRouter):
+    """Policy baseline: invia tutti i sotto-problemi esclusivamente al solutore classico CPU."""
+    def __init__(self, qpu_sampler, cpu_sampler, **kwargs):
+        super().__init__(qpu_sampler=qpu_sampler, cpu_sampler=cpu_sampler, **kwargs)
+    
+    def next(self, state, **kwargs):
+
+        # ========== LOG DIAGNOSTICI ==========
+        print("\n===== DEBUG STATE PRIMA DEL SAMPLER =====")
+        print(f"Chiavi presenti nello state: {list(state.keys())}")
+
+        if 'subsamples' in state:
+            ss = state.subsamples
+            print(f"subsamples presente: Sì")
+            print(f"  - tipo: {type(ss)}")
+            if ss is not None:
+                print(f"  - variabili in subsamples: {list(ss.variables) if hasattr(ss, 'variables') else 'N/A'}")
+                print(f"  - numero samples: {len(ss)}")
+        else:
+            print("subsamples presente: No")
+
+        print(f"subproblem variabili: {list(state.subproblem.variables)}")
+        print(f"samples globali variabili: {list(state.samples.variables)}")
+        print("=========================================\n")
+        # =====================================
+
+        return self._execute_route(state, route_to_qpu=False)
+
 
 class AlwaysCPUPolicy(BasePolicy):
     def __init__(self, **kwargs):
@@ -13,15 +42,12 @@ class AlwaysCPUPolicy(BasePolicy):
     def solve(self, bqm, global_embedding, is_all_embeddable, target_graph=None) -> Dict[str, Any]:
         start_time = time.perf_counter()
         
-        cpu_fallback = hybrid.TabuSubproblemSampler(num_reads=20)
-        router = ConfigurableRouterSampler(
-            mode=self.name,
-            global_embedding=global_embedding,
-            is_all_embeddable=is_all_embeddable,
+        cpu_sampler = hybrid.TabuSubproblemSampler(num_reads=20)
+
+        router = AlwaysCPURouter(
             qpu_sampler=None,
-            cpu_sampler=cpu_fallback,
-            target_graph=target_graph
-        )
+            cpu_sampler=cpu_sampler
+        );
 
         decomposer = hybrid.Unwind(
             hybrid.EnergyImpactDecomposer(
@@ -34,6 +60,7 @@ class AlwaysCPUPolicy(BasePolicy):
 
         subproblem_pipeline = (
             decomposer
+            #| hybrid.Const(subsamples=None)
             | hybrid.Map(router)
             | hybrid.Reduce(hybrid.Lambda(self._merge_substates))
             | hybrid.SplatComposer()

@@ -3,7 +3,7 @@ import os
 import uuid
 from typing import Dict, Any, Optional
 from fastapi import FastAPI, HTTPException, BackgroundTasks
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, ConfigDict, Field
 import redis
 
 from benchmark import run_comparative_suite
@@ -28,14 +28,31 @@ redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_respon
 orchestrator = EmbeddingAwareOrchestrator(
     policy_mode='embedding_aware',
     max_iter=5,
-    convergence=3
+    convergence=2
 )
 
 ### MODELLI DI RICHIESTA E RISPOSTA ###
 class LPUrlRequest(BaseModel):
-    lp_url: HttpUrl
+    model_config = ConfigDict(use_attribute_docstrings=True)
+
+    lp_url: HttpUrl  = Field(      
+        examples=["https://qplib.zib.de/lp/QPLIB_3852.lp"]
+        )
+    """
+    URL al file .lp da elaborare.
+    """
     lagrange_multiplier: Optional[float] = 10.0
+    """
+    Fattore di penalizzazione applicato per la conversione dei vincoli dell'istanza in termini quadratici di energia nel BQM.
+    """
     max_iter: Optional[int] = 5
+    """
+    Numero massimo di iterazioni per l'orchestratore.
+    """
+    convergence: Optional[int] = 2
+    """
+    Soglia di convergenza all'energia minima oltre la quale terminare anticipatamente la risoluzione.
+    """
 
 class JobSubmitResponse(BaseModel):
     job_id: str
@@ -46,13 +63,16 @@ def run_pipeline(job_id: str, req: LPUrlRequest):
     """Esegue la pipeline di download, parsing e risoluzione aggiornando lo stato su Redis."""
     try:
         #stato iniziale
-        redis_client.set(f"job:{job_id}", json.dumps({"status": "PROCESSING", "progress": "Downloading and parsing LP file..."}))
+        redis_client.set(f"job:{job_id}", json.dumps({"status": "PROCESSING", "progress": "Downloading and parsing .lp file..."}))
 
         #download e parsing del file .lp
         subqubo_obj, _, _ = orchestrator.load_qubo_lp(str(req.lp_url))
 
         if req.max_iter:
             orchestrator.max_iter = req.max_iter
+
+        if req.convergence:
+            orchestrator.convergence = req.convergence
 
         redis_client.set(f"job:{job_id}", json.dumps({"status": "PROCESSING", "progress": "Solving BQM via orchestrator..."}))
 
@@ -85,11 +105,17 @@ def run_benchmark_pipeline(job_id: str, req: LPUrlRequest):
         #stato iniziale
         redis_client.set(f"job:{job_id}", json.dumps({
             "status": "PROCESSING", 
-            "progress": "Downloading and parsing LP file for benchmarking..."
+            "progress": "Downloading and parsing .lp file for benchmarking..."
         }))
 
-        #parsing del file LP
+        #parsing del file .lp
         subqubo_obj, _, meta = orchestrator.load_qubo_lp(str(req.lp_url))
+
+        if req.max_iter:
+                orchestrator.max_iter = req.max_iter
+        
+        if req.convergence:
+                orchestrator.convergence = req.convergence
 
         redis_client.set(f"job:{job_id}", json.dumps({
             "status": "PROCESSING", 
@@ -137,7 +163,7 @@ def solve_lp_from_url(request: LPUrlRequest, background_tasks: BackgroundTasks):
     return JobSubmitResponse(
         job_id=job_id,
         status="PROCESSING",
-        message="Il file LP è in fase di download e risoluzione."
+        message="Il file .lp è in fase di download e risoluzione."
     )
 
 @app.post("/benchmark-lp", response_model=JobSubmitResponse, status_code=202)

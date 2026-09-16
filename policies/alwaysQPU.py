@@ -3,8 +3,21 @@ import dimod
 import time
 from typing import Dict, Any
 
-from policies.base import BasePolicy
-from policies.routerPolicies import ConfigurableRouterSampler
+from policies.basePolicy import BasePolicy
+#from policies.routerPolicies import ConfigurableRouterSampler
+from policies.baseRouter import BaseRouter
+
+class AlwaysQPUEmbeddableRouter(BaseRouter):
+    """Invia a QPU ogni sub-problema per cui si riesce a calcolare un embedding valido."""
+    def __init__(self, qpu_sampler, cpu_sampler, target_graph=None, **kwargs):
+        super().__init__(qpu_sampler=qpu_sampler, cpu_sampler=cpu_sampler, target_graph=target_graph, **kwargs)
+        self.target_graph = target_graph
+
+    def next(self, state, **kwargs):
+        sub_bqm = state.subproblem
+        embedding, is_embeddable = self.find_embedding(sub_bqm, self.target_graph)
+
+        return self._execute_route(state, route_to_qpu=is_embeddable, embedding=embedding)
 
 class AlwaysQPUEmbeddablePolicy(BasePolicy):
     def __init__(self, **kwargs):
@@ -41,10 +54,16 @@ class AlwaysQPUEmbeddablePolicy(BasePolicy):
         qpu_target = hybrid.InterruptableSimulatedAnnealingSubproblemSampler(num_reads=20, num_sweeps=1000)
         cpu_fallback = hybrid.TabuSubproblemSampler(num_reads=20)
 
-        router = ConfigurableRouterSampler(
-            mode=self.name,
-            global_embedding=global_embedding,
-            is_all_embeddable=is_all_embeddable,
+        #router = ConfigurableRouterSampler(
+        #    mode=self.name,
+        #    global_embedding=global_embedding,
+        #    is_all_embeddable=is_all_embeddable,
+        #    qpu_sampler=qpu_target,
+        #    cpu_sampler=cpu_fallback,
+        #    target_graph=target_graph
+        #)
+
+        router = AlwaysQPUEmbeddableRouter(
             qpu_sampler=qpu_target,
             cpu_sampler=cpu_fallback,
             target_graph=target_graph

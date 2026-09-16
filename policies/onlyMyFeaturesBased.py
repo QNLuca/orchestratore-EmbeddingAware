@@ -5,8 +5,32 @@ import hybrid
 import dwave.graphs as dnx
 
 from subQUBO import SubQUBO
-from policies.base import BasePolicy
-from policies.routerPolicies import ConfigurableRouterSampler
+from policies.basePolicy import BasePolicy
+#from policies.routerPolicies import ConfigurableRouterSampler
+
+from policies.baseRouter import BaseRouter
+
+class OnlyMyFeaturesRouter(BaseRouter):
+    """Invia a QPU ogni sub-problema per cui si riesce a calcolare un embedding valido."""
+    def __init__(self, qpu_sampler, cpu_sampler, target_graph=None, max_size=40, max_density=0.5, max_degree=15, **kwargs):
+        super().__init__(qpu_sampler=qpu_sampler, cpu_sampler=cpu_sampler, target_graph=target_graph, **kwargs)
+        self.target_graph = target_graph
+        self.max_size = max_size
+        self.max_density = max_density
+        self.max_degree = max_degree
+
+    def next(self, state, **kwargs):
+        sub_bqm = state.subproblem
+        num_vars = len(sub_bqm.variables)
+        sub_qubo = SubQUBO(bqm=sub_bqm)
+        density = sub_qubo.density
+        avg_degree = sub_qubo.average_degree
+
+        embedding, is_embeddable = self.find_embedding(sub_bqm, self.target_graph)
+
+        route_to_qpu = is_embeddable and (num_vars <= self.max_size) and (density <= self.max_density) and avg_degree < self.max_degree
+
+        return self._execute_route(state, route_to_qpu=route_to_qpu, embedding=embedding)
 
 class OnlyMyFeaturesBasedPolicy(BasePolicy):
     def __init__(self, **kwargs):
@@ -47,15 +71,24 @@ class OnlyMyFeaturesBasedPolicy(BasePolicy):
         qpu_target = hybrid.InterruptableSimulatedAnnealingSubproblemSampler(num_reads=20, num_sweeps=1000)
         cpu_fallback = hybrid.TabuSubproblemSampler(num_reads=20)
 
-        router = ConfigurableRouterSampler(
-            mode=self.name,
-            global_embedding=global_embedding,
-            is_all_embeddable=is_all_embeddable,
+        #router = ConfigurableRouterSampler(
+        #    mode=self.name,
+        #    global_embedding=global_embedding,
+        #    is_all_embeddable=is_all_embeddable,
+        #    qpu_sampler=qpu_target,
+        #    cpu_sampler=cpu_fallback,
+        #    target_graph=target_graph,
+        #    max_size=max_size,
+        #    max_density=max_density
+        #)
+
+        router = OnlyMyFeaturesRouter(
             qpu_sampler=qpu_target,
             cpu_sampler=cpu_fallback,
             target_graph=target_graph,
             max_size=max_size,
-            max_density=max_density
+            max_density=max_density,
+            max_degree=15
         )
 
         decomposer = hybrid.Unwind(

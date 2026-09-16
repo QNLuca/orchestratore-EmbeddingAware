@@ -3,7 +3,7 @@ import dimod
 import time
 from typing import Dict, Any
 
-from policies.base import BasePolicy
+from policies.basePolicy import BasePolicy
 
 class QBSolvPolicy(BasePolicy):
     def __init__(self, **kwargs):

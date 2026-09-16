@@ -3,7 +3,7 @@ from typing import Any, Dict
 import dimod
 import hybrid
 
-from policies.base import BasePolicy
+from policies.basePolicy import BasePolicy
 
 class KerberosPolicy(BasePolicy):
     def __init__(self, **kwargs):

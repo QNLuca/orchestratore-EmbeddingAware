@@ -1,0 +1,586 @@
+#1 [orchestratore_orchestrator internal] load .dockerignore
+#1 transferring context: 74B done
+#1 DONE 0.0s
+
+#2 [orchestratore_orchestrator internal] load build definition from Dockerfile
+#2 transferring dockerfile: 870B done
+#2 DONE 0.1s
+
+#3 [orchestratore_orchestrator internal] load metadata for docker.io/library/python:3.10-slim
+#3 ...
+
+#4 [orchestratore_worker-qpu internal] load .dockerignore
+#4 transferring context: 74B done
+#4 DONE 0.1s
+
+#5 [orchestratore_api internal] load build definition from Dockerfile
+#5 transferring dockerfile: 870B done
+#5 DONE 0.1s
+
+#6 [orchestratore_api internal] load .dockerignore
+#6 transferring context: 74B done
+#6 DONE 0.2s
+
+#7 [orchestratore_worker-qpu internal] load build definition from Dockerfile
+#7 transferring dockerfile: 870B done
+#7 DONE 0.2s
+
+#8 [orchestratore_worker-cpu internal] load .dockerignore
+#8 transferring context: 74B done
+#8 DONE 0.2s
+
+#9 [orchestratore_worker-cpu internal] load build definition from Dockerfile
+#9 transferring dockerfile: 870B done
+#9 DONE 0.2s
+
+#3 [orchestratore_worker-qpu internal] load metadata for docker.io/library/python:3.10-slim
+#3 DONE 0.9s
+
+#10 [orchestratore_worker-qpu 1/6] FROM docker.io/library/python:3.10-slim@sha256:fd76ade0c607f27677bc04be3c60749f400eedc941d9e72967e19a4cedff80c2
+#10 DONE 0.0s
+
+#11 [orchestratore_orchestrator internal] load build context
+#11 transferring context: 87.31kB done
+#11 DONE 0.1s
+
+#12 [orchestratore_worker-cpu internal] load build context
+#12 transferring context: 87.58kB done
+#12 DONE 0.1s
+
+#13 [orchestratore_worker-qpu internal] load build context
+#13 transferring context: 87.31kB done
+#13 DONE 0.1s
+
+#14 [orchestratore_api internal] load build context
+#14 transferring context: 87.58kB done
+#14 DONE 0.2s
+
+#15 [orchestratore_worker-cpu 5/6] RUN pip install --no-cache-dir -r requirements.txt
+#15 CACHED
+
+#16 [orchestratore_worker-cpu 4/6] COPY requirements.txt /app/
+#16 CACHED
+
+#17 [orchestratore_worker-cpu 2/6] WORKDIR /app
+#17 CACHED
+
+#18 [orchestratore_worker-cpu 3/6] RUN apt-get update && apt-get install -y --no-install-recommends     build-essential     gcc     && rm -rf /var/lib/apt-get/lists/*
+#18 CACHED
+
+#19 [orchestratore_orchestrator 4/6] COPY requirements.txt /app/
+#19 CACHED
+
+#20 [orchestratore_orchestrator 5/6] RUN pip install --no-cache-dir -r requirements.txt
+#20 CACHED
+
+#21 [orchestratore_worker-cpu 6/6] COPY . /app/
+#21 ...
+
+#22 [orchestratore_orchestrator 6/6] COPY . /app/
+#22 DONE 0.2s
+
+#21 [orchestratore_worker-cpu 6/6] COPY . /app/
+#21 DONE 0.2s
+
+#23 [orchestratore_worker-qpu] exporting to image
+#23 exporting layers 0.1s done
+#23 writing image sha256:db7dd54a55440427543810cf9a7ece208deef34ecc53070283c3b02b1c1e4e99 0.0s done
+#23 naming to docker.io/library/orchestratore_worker-qpu 0.0s done
+#23 DONE 0.2s
+
+#24 [orchestratore_worker-cpu] exporting to image
+#24 exporting layers 0.1s done
+#24 writing image sha256:ab5ae90c3bcabbf07bc9a4c004a6afe072521ecdc820bfc3b6934244aaa64d32 0.0s done
+#24 naming to docker.io/library/orchestratore_worker-cpu 0.0s done
+#24 DONE 0.2s
+
+#25 [orchestratore_api] exporting to image
+#25 exporting layers 0.2s done
+#25 writing image sha256:ab5ae90c3bcabbf07bc9a4c004a6afe072521ecdc820bfc3b6934244aaa64d32 0.0s done
+#25 naming to docker.io/library/orchestratore_api 0.0s done
+#25 DONE 0.2s
+
+#26 [orchestratore_orchestrator] exporting to image
+#26 exporting layers 0.2s done
+#26 writing image sha256:db7dd54a55440427543810cf9a7ece208deef34ecc53070283c3b02b1c1e4e99 0.0s done
+#26 naming to docker.io/library/orchestratore_orchestrator 0.0s done
+#26 DONE 0.2s
+Attaching to orchestratore-worker-cpu-1, orchestratore-worker-cpu-2, orchestratore-worker-qpu-1, subqubo-api, subqubo-orchestrator, subqubo-redis
+subqubo-redis               | Starting Redis Server
+subqubo-redis               | 1:C 16 Sep 2026 15:57:13.708 # WARNING Memory overcommit must be enabled! Without it, a background save or replication may fail under low memory condition. Being disabled, it can also cause failures without low memory condition, see https://github.com/jemalloc/jemalloc/issues/1328. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+subqubo-redis               | 1:C 16 Sep 2026 15:57:13.708 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+subqubo-redis               | 1:C 16 Sep 2026 15:57:13.708 * Redis version=8.10.1, bits=64, commit=00000000, modified=1, pid=1, just started
+subqubo-redis               | 1:C 16 Sep 2026 15:57:13.708 * Configuration loaded
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.708 * monotonic clock: POSIX clock_gettime
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.709 * Running mode=standalone, port=6379.
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.710 * <bf> RedisBloom version 8.10.1 (Git=unknown)
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.710 * <bf> Registering configuration options: [
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.710 * <bf> 	{ bf-error-rate       :      0.01 }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.710 * <bf> 	{ bf-initial-size     :       100 }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.710 * <bf> 	{ bf-expansion-factor :         2 }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.710 * <bf> 	{ cf-bucket-size      :         2 }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.710 * <bf> 	{ cf-initial-size     :      1024 }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.710 * <bf> 	{ cf-max-iterations   :        20 }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.710 * <bf> 	{ cf-expansion-factor :         1 }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.710 * <bf> 	{ cf-max-expansions   :        32 }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.710 * <bf> ]
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.710 * Module 'bf' loaded from /usr/local/lib/redis/modules//redisbloom.so
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.716 * <search> search-workers default: 8 (min of MAX_WORKER_THREADS=16 and CPU cores)
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.717 * <search> Redis version found by RedisSearch : 8.10.1 - oss
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.717 * <search> RediSearch version 8.10.0 (Git=)
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.717 * <search> gc: ON, prefix min length: 2, min word length to stem: 4, prefix max expansions: 200, query timeout (ms): 500, timeout policy: return, oom policy: return, cursor read size: 1000, cursor max idle (ms): 300000, max doctable size: 1000000, max number of search results:  1000000, default scorer: BM25STD, 
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.717 * <search> Initialized thread pools!
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.717 * <search> Enabled workers threadpool of size 8
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.717 * <search> Subscribe to config changes
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.717 * <search> Subscribe to cluster slot migration events
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.717 * <search> Subscribe to cluster topology change events
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.717 * <search> Enabled role change notification
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.718 * <search> Cluster configuration: AUTO partitions, type: 0, coordinator timeout: 0ms
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.718 * Module 'search' loaded from /usr/local/lib/redis/modules//redisearch.so
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> RedisTimeSeries version 81000, git_sha=
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> Redis version found by RedisTimeSeries : 8.10.1 - oss
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> Registering configuration options: [
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> 	{ ts-compaction-policy   :              }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> 	{ ts-num-threads         :            3 }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> 	{ ts-libmr-protocol      :     INTERNAL }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> 	{ ts-retention-policy    :            0 }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> 	{ ts-duplicate-policy    :        block }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> 	{ ts-chunk-size-bytes    :         4096 }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> 	{ ts-encoding            :   compressed }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> 	{ ts-ignore-max-time-diff:            0 }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> 	{ ts-ignore-max-val-diff :     0.000000 }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> 	{ ts-topology-events     :         true }
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> ]
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> Detected redis oss (cluster-enabled=no)
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> Subscribe to ASM events
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> Subscribe to topology changes events
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * <timeseries> Enabled diskless replication
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.719 * Module 'timeseries' loaded from /usr/local/lib/redis/modules//redistimeseries.so
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.720 * <ReJSON> Created new data type 'ReJSON-RL'
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.720 * <ReJSON> version: 81000 git sha: unknown branch: unknown
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.720 * <ReJSON> Exported RedisJSON_V1 API
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.720 * <ReJSON> Exported RedisJSON_V2 API
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.720 * <ReJSON> Exported RedisJSON_V3 API
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.720 * <ReJSON> Exported RedisJSON_V4 API
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.720 * <ReJSON> Exported RedisJSON_V5 API
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.720 * <ReJSON> Exported RedisJSON_V6 API
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.720 * <ReJSON> Exported RedisJSON_V7 API
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.720 * <ReJSON> Exported RedisJSON_V8 API
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.721 * <ReJSON> Enabled diskless replication
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.721 * <ReJSON> Initialized shared string cache, thread safe: true.
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.721 * Module 'ReJSON' loaded from /usr/local/lib/redis/modules//rejson.so
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.721 * <search> Acquired RedisJSON_V8 API
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.721 * Server initialized
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.721 * Ready to accept connections tcp
+subqubo-redis               | 1:M 16 Sep 2026 15:57:13.721 # WARNING: Redis does not require authentication and is not protected by network restrictions. Redis will accept connections from any IP address on any network interface.
+orchestratore-worker-cpu-2  | Worker avviato
+orchestratore-worker-qpu-1  | Worker avviato
+orchestratore-worker-cpu-1  | Worker avviato
+subqubo-api                 | INFO:     Started server process [1]
+subqubo-api                 | INFO:     Waiting for application startup.
+subqubo-api                 | INFO:     Application startup complete.
+subqubo-api                 | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+subqubo-orchestrator exited with code 0
+subqubo-api                 | INFO:     172.18.0.1:56288 - "GET /docs HTTP/1.1" 200 OK
+subqubo-api                 | INFO:     172.18.0.1:56288 - "GET /openapi.json HTTP/1.1" 200 OK
+subqubo-api                 | INFO:     172.18.0.1:44962 - "POST /benchmark-lp HTTP/1.1" 202 Accepted
+subqubo-api                 | Calcolo embedding globale per il BQM in corso...
+subqubo-api                 | Embedding globale completato. Embeddabile interamente: False
+subqubo-api                 | 
+subqubo-api                 | AVVIO BENCHMARK COMPARATIVO ROUTING POLICY (BQM N=231)
+orchestratore-worker-cpu-2  | [QPU] Prelevato task 3656b01e-fafc-4bed-9640-0a17cf12fd46...
+orchestratore-worker-qpu-1  | [QPU] Prelevato task bde2997e-c26e-407e-a5bd-eec45cb58b6b...
+orchestratore-worker-cpu-1  | [QPU] Prelevato task 4b7147e8-71e1-4dd9-9ca6-a124aaed83ac...
+orchestratore-worker-cpu-2  | [QPU] Task 3656b01e-fafc-4bed-9640-0a17cf12fd46 completato e inviato.
+orchestratore-worker-cpu-2  | [QPU] Prelevato task 96fa2fba-3087-4a21-8464-2f211088f476...
+orchestratore-worker-qpu-1  | [QPU] Task bde2997e-c26e-407e-a5bd-eec45cb58b6b completato e inviato.
+orchestratore-worker-qpu-1  | [QPU] Prelevato task 6de70c94-54b6-4629-be18-f64cf4df981c...
+orchestratore-worker-cpu-1  | [QPU] Task 4b7147e8-71e1-4dd9-9ca6-a124aaed83ac completato e inviato.
+orchestratore-worker-cpu-1  | [QPU] Prelevato task d622368a-3b94-4c90-9a7b-d487b4301513...
+orchestratore-worker-cpu-2  | [QPU] Task 96fa2fba-3087-4a21-8464-2f211088f476 completato e inviato.
+orchestratore-worker-cpu-2  | [QPU] Prelevato task a50b7541-c94e-4fc8-964b-2fb39c72f2b6...
+orchestratore-worker-qpu-1  | [QPU] Task 6de70c94-54b6-4629-be18-f64cf4df981c completato e inviato.
+orchestratore-worker-qpu-1  | [QPU] Prelevato task db5d5316-b9ce-4dae-9b14-83ed5feca23e...
+orchestratore-worker-cpu-2  | [QPU] Task a50b7541-c94e-4fc8-964b-2fb39c72f2b6 completato e inviato.
+orchestratore-worker-cpu-1  | [QPU] Task d622368a-3b94-4c90-9a7b-d487b4301513 completato e inviato.
+orchestratore-worker-qpu-1  | [QPU] Task db5d5316-b9ce-4dae-9b14-83ed5feca23e completato e inviato.
+orchestratore-worker-cpu-2  | [QPU] Prelevato task adce0982-42e6-4d07-87fb-e288c5a41d0f...
+orchestratore-worker-cpu-1  | [QPU] Prelevato task 90340f77-5fd3-45f6-bbbb-950d7028dda0...
+orchestratore-worker-qpu-1  | [QPU] Prelevato task 1cc64318-a2a4-46f3-9feb-a100934ffa9c...
+orchestratore-worker-cpu-2  | [QPU] Task adce0982-42e6-4d07-87fb-e288c5a41d0f completato e inviato.
+orchestratore-worker-cpu-2  | [QPU] Prelevato task b0bc7e7b-4921-4ba5-b9fc-c5d16ca41a92...
+orchestratore-worker-cpu-1  | [QPU] Task 90340f77-5fd3-45f6-bbbb-950d7028dda0 completato e inviato.
+orchestratore-worker-cpu-1  | [QPU] Prelevato task 87f3db85-923d-49e9-9078-61362cfaaed7...
+orchestratore-worker-qpu-1  | [QPU] Task 1cc64318-a2a4-46f3-9feb-a100934ffa9c completato e inviato.
+orchestratore-worker-qpu-1  | [QPU] Prelevato task 471f74d6-0374-4ba7-85fa-265e111052ce...
+orchestratore-worker-cpu-2  | [QPU] Task b0bc7e7b-4921-4ba5-b9fc-c5d16ca41a92 completato e inviato.
+orchestratore-worker-cpu-2  | [QPU] Prelevato task dd3d4853-0afa-449c-afe7-33d1400faec9...
+orchestratore-worker-cpu-1  | [QPU] Task 87f3db85-923d-49e9-9078-61362cfaaed7 completato e inviato.
+orchestratore-worker-cpu-1  | [QPU] Prelevato task 7383658e-eb4b-4c74-b51d-e19fb6cb1511...
+orchestratore-worker-qpu-1  | [QPU] Task 471f74d6-0374-4ba7-85fa-265e111052ce completato e inviato.
+orchestratore-worker-cpu-2  | [QPU] Task dd3d4853-0afa-449c-afe7-33d1400faec9 completato e inviato.
+orchestratore-worker-cpu-1  | [QPU] Task 7383658e-eb4b-4c74-b51d-e19fb6cb1511 completato e inviato.
+subqubo-api                 | Valutazione Policy: [always_cpu] ...
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b117', 'b179', 'b198', 'b154', 'b200', 'b103', 'b157', 'b201', 'b199', 'b232', 'b69', 'b231', 'b9', 'b71', 'b155', 'b197', 'b49', 'b104', 'b153', 'b5', 'b6', 'b202', 'b156', 'b158', 'b68', 'b115', 'b50', 'b105', 'b230', 'b72', 'b229']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b168', 'b29', 'b190', 'b170', 'b148', 'b172', 'b101', 'b83', 'b129', 'b133', 'b131', 'b132', 'b99', 'b80', 'b79', 'b220', 'b218', 'b58', 'b188', 'b189', 'b219', 'b70', 'b130', 'b192', 'b222', 'b47', 'b43', 'b169', 'b194', 'b193', 'b54']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b40', 'b12', 'b63', 'b205', 'b207', 'b60', 'b208', 'b209', 'b62', 'b20', 'b27', 'b180', 'b206', 'b121', 'b76', 'b182', 'b21', 'b181', 'b78', 'b143', 'b141', 'b45', 'b87', 'b123', 'b7', 'b10', 'b41', 'b119', 'b67', 'b139', 'b142']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b184', 'b31', 'b51', 'b32', 'b93', 'b92', 'b81', 'b94', 'b183', 'b136', 'b30', 'b196', 'b187', 'b61', 'b186', 'b137', 'b203', 'b204', 'b22', 'b23', 'b33', 'b125', 'b95', 'b97', 'b124', 'b185', 'b165', 'b96', 'b3', 'b98', 'b13']
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b35', 'b59', 'b112', 'b174', 'b225', 'b176', 'b227', 'b113', 'b151', 'b85', 'b39', 'b56', 'b177', 'b178', 'b226', 'b228', 'b111', 'b223', 'b224', 'b173', 'b175', 'b4', 'b191', 'b91', 'b24', 'b14', 'b55', 'b52', 'b114', 'b127', 'b135']
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b17', 'b15', 'b75', 'b107', 'b138', 'b11', 'b73', 'b74', 'b162', 'b161', 'b160', 'b163', 'b159', 'b66', 'b90', 'b100', 'b53', 'b37', 'b210', 'b26', 'b152', 'b64', 'b36', 'b8', 'b140', 'b48', 'b164', 'b128', 'b150', 'b25', 'b19']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | subproblem variabili: ['b149', 'b126', 'b221', 'b88', 'b108', 'b147', 'b84', 'b89', 'b57', 'b109', 'b212', 'b213', 'b215', 'b217', 'b28', 'b2', 'b42', 'b171', 'b82', 'b46', 'b110', 'b216', 'b16', 'b166', 'b144', 'b65', 'b38', 'b145', 'b167', 'b146', 'b214']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b211', 'b134', 'b102', 'b120', 'b77', 'b34', 'b86', 'b44', 'b116', 'b122', 'b195', 'b106', 'b118', 'b18']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b117', 'b179', 'b198', 'b154', 'b200', 'b103', 'b157', 'b201', 'b199', 'b232', 'b69', 'b231', 'b9', 'b71', 'b155', 'b197', 'b49', 'b104', 'b153', 'b5', 'b6', 'b202', 'b156', 'b158', 'b68', 'b115', 'b50', 'b105', 'b230', 'b72', 'b229']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b35', 'b59', 'b112', 'b174', 'b225', 'b176', 'b227', 'b113', 'b177', 'b18', 'b56', 'b134', 'b178', 'b94', 'b93', 'b92', 'b81', 'b135', 'b226', 'b228', 'b221', 'b224', 'b223', 'b175', 'b24', 'b14', 'b152', 'b52', 'b114', 'b47', 'b222']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b168', 'b29', 'b170', 'b33', 'b146', 'b148', 'b172', 'b17', 'b169', 'b111', 'b99', 'b150', 'b219', 'b147', 'b89', 'b173', 'b187', 'b42', 'b2', 'b82', 'b110', 'b125', 'b216', 'b79', 'b80', 'b90', 'b83', 'b127', 'b220', 'b167', 'b34']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b88', 'b96', 'b196', 'b194', 'b22', 'b23', 'b186', 'b189', 'b95', 'b97', 'b195', 'b165', 'b32', 'b61', 'b183', 'b3', 'b51', 'b98', 'b13', 'b218', 'b58', 'b188', 'b70', 'b190', 'b131', 'b4', 'b192', 'b193', 'b77', 'b171', 'b191']
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b30', 'b164', 'b60', 'b124', 'b211', 'b108', 'b16', 'b28', 'b109', 'b57', 'b212', 'b213', 'b215', 'b46', 'b84', 'b145', 'b210', 'b144', 'b122', 'b185', 'b65', 'b38', 'b53', 'b37', 'b163', 'b26', 'b27', 'b126', 'b214', 'b54', 'b217']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====subproblem variabili: ['b39', 'b101', 'b184', 'b31', 'b64', 'b85', 'b161', 'b15', 'b75', 'b107', 'b138', 'b136', 'b137', 'b129', 'b11', 'b73', 'b162', 'b160', 'b159', 'b166', 'b36', 'b8', 'b140', 'b130', 'b132', 'b48', 'b133', 'b151', 'b204', 'b203', 'b19']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | 
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>  - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b40', 'b12', 'b63', 'b205', 'b207', 'b62', 'b209', 'b20', 'b180', 'b74', 'b206', 'b208', 'b121', 'b76', 'b182', 'b21', 'b181', 'b78', 'b143', 'b141', 'b45', 'b87', 'b123', 'b7', 'b10', 'b41', 'b66', 'b119', 'b67', 'b139', 'b142']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | subproblem variabili: ['b100', 'b128', 'b149', 'b102', 'b55', 'b43', 'b91', 'b120', 'b86', 'b44', 'b116', 'b25', 'b106', 'b118']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | 
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b40', 'b207', 'b30', 'b36', 'b164', 'b208', 'b60', 'b124', 'b209', 'b211', 'b62', 'b140', 'b20', 'b27', 'b15', 'b120', 'b121', 'b182', 'b181', 'b122', 'b185', 'b7', 'b37', 'b210', 'b26', 'b73', 'b48', 'b139', 'b66', 'b206', 'b45']
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | subproblem variabili: ['b168', 'b29', 'b190', 'b39', 'b101', 'b85', 'b170', 'b148', 'b172', 'b111', 'b99', 'b174', 'b219', 'b83', 'b129', 'b216', 'b79', 'b54', 'b173', 'b110', 'b80', 'b127', 'b220', 'b218', 'b58', 'b188', 'b189', 'b70', 'b222', 'b169', 'b171']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 | 
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b117', 'b179', 'b198', 'b154', 'b200', 'b103', 'b157', 'b201', 'b199', 'b232', 'b69', 'b231', 'b9', 'b71', 'b155', 'b197', 'b49', 'b104', 'b153', 'b5', 'b6', 'b202', 'b156', 'b158', 'b68', 'b115', 'b50', 'b105', 'b230', 'b72', 'b229']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | subproblem variabili: ['b35', 'b59', 'b112', 'b225', 'b176', 'b227', 'b113', 'b151', 'b177', 'b134', 'b178', 'b93', 'b135', 'b226', 'b228', 'b221', 'b224', 'b223', 'b175', 'b4', 'b24', 'b14', 'b130', 'b152', 'b128', 'b132', 'b192', 'b47', 'b131', 'b150', 'b193']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']  - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b184', 'b32', 'b94', 'b136', 'b196', 'b43', 'b55', 'b194', 'b187', 'b61', 'b186', 'b92', 'b137', 'b203', 'b81', 'b204', 'b133', 'b102', 'b22', 'b23', 'b95', 'b195', 'b52', 'b56', 'b165', 'b96', 'b183', 'b125', 'b114', 'b18', 'b191']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | 
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b31', 'b10', 'b161', 'b17', 'b180', 'b74', 'b76', 'b8', 'b106', 'b205', 'b11', 'b162', 'b107', 'b41', 'b119', 'b160', 'b163', 'b78', 'b12', 'b75', 'b118', 'b143', 'b51', 'b64', 'b141', 'b97', 'b3', 'b98', 'b123', 'b25', 'b142']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b149', 'b126', 'b88', 'b53', 'b87', 'b108', 'b147', 'b84', 'b89', 'b91', 'b57', 'b109', 'b212', 'b213', 'b215', 'b2', 'b42', 'b217', 'b28', 'b82', 'b46', 'b16', 'b166', 'b144', 'b65', 'b38', 'b145', 'b167', 'b146', 'b214', 'b34']
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b100', 'b90', 'b63', 'b67', 'b33', 'b77', 'b13', 'b86', 'b44', 'b116', 'b159', 'b21', 'b138', 'b19']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | 
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b168', 'b29', 'b170', 'b33', 'b146', 'b148', 'b172', 'b17', 'b169', 'b111', 'b99', 'b150', 'b219', 'b147', 'b89', 'b173', 'b187', 'b42', 'b2', 'b82', 'b110', 'b125', 'b216', 'b79', 'b80', 'b90', 'b83', 'b127', 'b220', 'b167', 'b34']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b35', 'b59', 'b112', 'b174', 'b225', 'b176', 'b227', 'b113', 'b177', 'b18', 'b56', 'b134', 'b178', 'b94', 'b93', 'b92', 'b81', 'b135', 'b226', 'b228', 'b221', 'b224', 'b223', 'b175', 'b24', 'b14', 'b152', 'b52', 'b114', 'b47', 'b222']
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b184', 'b31', 'b51', 'b32', 'b64', 'b10', 'b161', 'b183', 'b165', 'b143', 'b180', 'b74', 'b76', 'b8', 'b106', 'b205', 'b11', 'b162', 'b107', 'b41', 'b119', 'b160', 'b163', 'b78', 'b12', 'b75', 'b118', 'b141', 'b61', 'b13', 'b25']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | subsamples presente: Sìsubproblem variabili: ['b117', 'b179', 'b198', 'b154', 'b200', 'b103', 'b157', 'b201', 'b199', 'b232', 'b69', 'b231', 'b9', 'b71', 'b155', 'b197', 'b49', 'b104', 'b153', 'b5', 'b6', 'b202', 'b156', 'b158', 'b68', 'b115', 'b50', 'b105', 'b230', 'b72', 'b229']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b137', 'b136', 'b63', 'b151', 'b67', 'b95', 'b123', 'b86', 'b44', 'b116', 'b159', 'b21', 'b138', 'b19']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b85', 'b101', 'b126', 'b149', 'b192', 'b88', 'b53', 'b87', 'b96', 'b108', 'b57', 'b109', 'b212', 'b213', 'b215', 'b16', 'b28', 'b217', 'b84', 'b54', 'b142', 'b166', 'b144', 'b65', 'b38', 'b145', 'b46', 'b214', 'b100', 'b171', 'b191']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b39', 'b195', 'b196', 'b43', 'b55', 'b194', 'b133', 'b102', 'b131', 'b132', 'b22', 'b23', 'b186', 'b189', 'b97', 'b3', 'b98', 'b218', 'b58', 'b188', 'b70', 'b190', 'b130', 'b128', 'b129', 'b4', 'b193', 'b91', 'b204', 'b203', 'b77']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | 
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b40', 'b207', 'b30', 'b36', 'b164', 'b208', 'b60', 'b124', 'b209', 'b211', 'b62', 'b140', 'b20', 'b27', 'b15', 'b120', 'b121', 'b182', 'b181', 'b122', 'b185', 'b7', 'b37', 'b210', 'b26', 'b73', 'b48', 'b139', 'b66', 'b206', 'b45']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b117', 'b179', 'b198', 'b154', 'b200', 'b103', 'b157', 'b201', 'b199', 'b232', 'b69', 'b231', 'b9', 'b71', 'b155', 'b197', 'b49', 'b104', 'b153', 'b5', 'b6', 'b202', 'b156', 'b158', 'b68', 'b115', 'b50', 'b105', 'b230', 'b72', 'b229']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b168', 'b29', 'b190', 'b39', 'b101', 'b85', 'b170', 'b148', 'b172', 'b111', 'b99', 'b174', 'b219', 'b83', 'b129', 'b216', 'b79', 'b54', 'b173', 'b110', 'b80', 'b127', 'b220', 'b218', 'b58', 'b188', 'b189', 'b70', 'b222', 'b169', 'b171']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b149', 'b126', 'b88', 'b53', 'b87', 'b108', 'b147', 'b84', 'b89', 'b91', 'b57', 'b109', 'b212', 'b213', 'b215', 'b2', 'b42', 'b217', 'b28', 'b82', 'b46', 'b16', 'b166', 'b144', 'b65', 'b38', 'b145', 'b167', 'b146', 'b214', 'b34']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | subsamples presente: Sì=========================================
+subqubo-api                 | 
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>=========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b40', 'b207', 'b30', 'b36', 'b164', 'b208', 'b60', 'b124', 'b209', 'b211', 'b62', 'b140', 'b20', 'b27', 'b15', 'b120', 'b121', 'b182', 'b181', 'b122', 'b185', 'b7', 'b37', 'b210', 'b26', 'b73', 'b48', 'b139', 'b66', 'b206', 'b45']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | Chiavi presenti nello state: ['subsamples', 'samples', 'subproblem', 'problem']
+subqubo-api                 | 
+subqubo-api                 | ===== DEBUG STATE PRIMA DEL SAMPLER =====
+subqubo-api                 | 
+subqubo-api                 | subproblem variabili: ['b35', 'b59', 'b112', 'b225', 'b176', 'b227', 'b113', 'b151', 'b177', 'b134', 'b178', 'b93', 'b135', 'b226', 'b228', 'b221', 'b224', 'b223', 'b175', 'b4', 'b24', 'b14', 'b130', 'b152', 'b128', 'b132', 'b192', 'b47', 'b131', 'b150', 'b193']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | subsamples presente: Sìsubsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b184', 'b32', 'b94', 'b136', 'b196', 'b43', 'b55', 'b194', 'b187', 'b61', 'b186', 'b92', 'b137', 'b203', 'b81', 'b204', 'b133', 'b102', 'b22', 'b23', 'b33', 'b125', 'b95', 'b195', 'b52', 'b56', 'b165', 'b96', 'b183', 'b114', 'b18']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | Chiavi presenti nello state: ['problem', 'samples', 'subproblem', 'subsamples']=========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 | subsamples presente: Sì
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b100', 'b90', 'b63', 'b67', 'b13', 'b77', 'b86', 'b44', 'b116', 'b159', 'b21', 'b191', 'b138', 'b19']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | 
+subqubo-api                 |   - tipo: <class 'NoneType'>
+subqubo-api                 | subproblem variabili: ['b31', 'b10', 'b161', 'b17', 'b180', 'b74', 'b76', 'b8', 'b106', 'b205', 'b11', 'b162', 'b107', 'b41', 'b119', 'b160', 'b163', 'b78', 'b12', 'b75', 'b118', 'b143', 'b51', 'b64', 'b141', 'b97', 'b3', 'b98', 'b123', 'b25', 'b142']
+subqubo-api                 | samples globali variabili: ['b10', 'b100', 'b101', 'b102', 'b103', 'b104', 'b105', 'b106', 'b107', 'b108', 'b109', 'b11', 'b110', 'b111', 'b112', 'b113', 'b114', 'b115', 'b116', 'b117', 'b118', 'b119', 'b12', 'b120', 'b121', 'b122', 'b123', 'b124', 'b125', 'b126', 'b127', 'b128', 'b129', 'b13', 'b130', 'b131', 'b132', 'b133', 'b134', 'b135', 'b136', 'b137', 'b138', 'b139', 'b14', 'b140', 'b141', 'b142', 'b143', 'b144', 'b145', 'b146', 'b147', 'b148', 'b149', 'b15', 'b150', 'b151', 'b152', 'b153', 'b154', 'b155', 'b156', 'b157', 'b158', 'b159', 'b16', 'b160', 'b161', 'b162', 'b163', 'b164', 'b165', 'b166', 'b167', 'b168', 'b169', 'b17', 'b170', 'b171', 'b172', 'b173', 'b174', 'b175', 'b176', 'b177', 'b178', 'b179', 'b18', 'b180', 'b181', 'b182', 'b183', 'b184', 'b185', 'b186', 'b187', 'b188', 'b189', 'b19', 'b190', 'b191', 'b192', 'b193', 'b194', 'b195', 'b196', 'b197', 'b198', 'b199', 'b2', 'b20', 'b200', 'b201', 'b202', 'b203', 'b204', 'b205', 'b206', 'b207', 'b208', 'b209', 'b21', 'b210', 'b211', 'b212', 'b213', 'b214', 'b215', 'b216', 'b217', 'b218', 'b219', 'b22', 'b220', 'b221', 'b222', 'b223', 'b224', 'b225', 'b226', 'b227', 'b228', 'b229', 'b23', 'b230', 'b231', 'b232', 'b24', 'b25', 'b26', 'b27', 'b28', 'b29', 'b3', 'b30', 'b31', 'b32', 'b33', 'b34', 'b35', 'b36', 'b37', 'b38', 'b39', 'b4', 'b40', 'b41', 'b42', 'b43', 'b44', 'b45', 'b46', 'b47', 'b48', 'b49', 'b5', 'b50', 'b51', 'b52', 'b53', 'b54', 'b55', 'b56', 'b57', 'b58', 'b59', 'b6', 'b60', 'b61', 'b62', 'b63', 'b64', 'b65', 'b66', 'b67', 'b68', 'b69', 'b7', 'b70', 'b71', 'b72', 'b73', 'b74', 'b75', 'b76', 'b77', 'b78', 'b79', 'b8', 'b80', 'b81', 'b82', 'b83', 'b84', 'b85', 'b86', 'b87', 'b88', 'b89', 'b9', 'b90', 'b91', 'b92', 'b93', 'b94', 'b95', 'b96', 'b97', 'b98', 'b99']
+subqubo-api                 | =========================================
+subqubo-api                 | 
+subqubo-api                 | BENCHMARK COMPARATIVO COMPLETATO (BQM N=231)
+subqubo-api                 | INFO:     172.18.0.1:56376 - "GET /status/31862bc3-44a8-4bee-83ec-393c377c8d94 HTTP/1.1" 200 OK
+Gracefully stopping... (press Ctrl+C again to force)

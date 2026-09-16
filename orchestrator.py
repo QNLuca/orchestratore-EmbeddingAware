@@ -14,8 +14,6 @@ import hybrid
 from dwave.embedding.zephyr import find_clique_embedding
 from minorminer import find_embedding
 
-
-import redis.asyncio as aioredis
 import redis
 
 from subQUBO import SubQUBO

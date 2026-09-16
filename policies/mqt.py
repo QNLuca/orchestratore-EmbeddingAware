@@ -8,8 +8,8 @@ import pickle
 import pandas as pd
 import numpy as np
 
-from policies.base import BasePolicy
-from policies.routerPolicies import ConfigurableRouterSampler
+from policies.basePolicy import BasePolicy
+from policies.baseRouter import BaseRouter
 
 #per sopprimere warning sklearn, tornare indietro di versione romperebbe l'attuale versione di SDK dwave ocean
 import warnings
@@ -17,18 +17,11 @@ from sklearn.exceptions import InconsistentVersionWarning
 
 warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
 
-class MQTQAOPolicy(BasePolicy):
-    """
-    Policy basata sulla selezione predittiva del solutore tramite Machine Learning (modello Random Forest).
-
-    Lavori a riguardo:
-        - Volpe, D., et al. (2024). "A Predictive Approach for Selecting the Best Quantum Solver 
-          for an Optimization Problem". IEEE QCE. arXiv:2408.03613.
-        - Volpe, D., et al. (2024). "Towards an Automatic Framework for Solving Optimization 
-          Problems with Quantum Computers". IEEE QSW. arXiv:2406.12840.
-    """
-    def __init__(self, **kwargs):
-        super().__init__(name="mqt_qao", **kwargs)
+class MQTAORouter(BaseRouter):
+    """Router basato sul classificatore ML di MQT-QAO."""
+    def __init__(self, qpu_sampler, cpu_sampler, target_graph=None, **kwargs):
+        super().__init__(qpu_sampler=qpu_sampler, cpu_sampler=cpu_sampler, target_graph=target_graph, **kwargs)
+        self.target_graph = target_graph
 
     def extract_qubo_features(self,bqm: dimod.BinaryQuadraticModel) -> pd.DataFrame:
         num_vars = len(bqm.variables)
@@ -54,28 +47,64 @@ class MQTQAOPolicy(BasePolicy):
         return pd.DataFrame(features, columns=feature_names)
 
     def predict_mqt_best_solver(self,bqm: dimod.BinaryQuadraticModel) -> str:
-        try:
-            #importato modelli dal lavoro di Volpe D. et al, 2024: https://github.com/cda-tum/mqt-qao/tree/main/src/mqt/qao/model/RandomForest
-            with open(os.path.join("modelsRF", "model.pkl"), "rb") as f:
-                model = pickle.load(f)
-            with open(os.path.join("modelsRF", "Scaler.pkl"), "rb") as f:
-                scaler = pickle.load(f)
-            with open(os.path.join("modelsRF", "ScalerKCross.pkl"), "rb") as f:
-                scalerk = pickle.load(f)
+            try:
+                #importato modelli dal lavoro di Volpe D. et al, 2024: https://github.com/cda-tum/mqt-qao/tree/main/src/mqt/qao/model/RandomForest
+                with open(os.path.join("modelsRF", "model.pkl"), "rb") as f:
+                    model = pickle.load(f)
+                with open(os.path.join("modelsRF", "Scaler.pkl"), "rb") as f:
+                    scaler = pickle.load(f)
+                with open(os.path.join("modelsRF", "ScalerKCross.pkl"), "rb") as f:
+                    scalerk = pickle.load(f)
+    
+                features = self.extract_qubo_features(bqm)
+                features_scaled = scalerk.transform(features)
+                features_scaled = scaler.transform(features_scaled)
+    
+                prediction = int(model.predict(features_scaled)[0])
+                label_map = {0: 'QA', 1: 'QAOA', 2: 'VQE', 3: 'GAS', 4: 'SA'}
+                return label_map.get(prediction, "SA")
+            except Exception as e:
+                print(e)
+                return "SA"
 
-            features = self.extract_qubo_features(bqm)
-            features_scaled = scalerk.transform(features)
-            features_scaled = scaler.transform(features_scaled)
+    def next(self, state, **kwargs):
+        sub_bqm = state.subproblem
+        solver_scelto = self.predict_mqt_best_solver(sub_bqm)
+        
+        route_to_qpu = False
+        embedding = None
 
-            prediction = int(model.predict(features_scaled)[0])
-            label_map = {0: 'QA', 1: 'QAOA', 2: 'VQE', 3: 'GAS', 4: 'SA'}
-            return label_map.get(prediction, "SA")
-        except Exception as e:
-            print(e)
-            return "SA"
+        if solver_scelto == 'QA':
+            embedding, is_embeddable = self.find_embedding(sub_bqm, self.target_graph)
+            if is_embeddable:
+                route_to_qpu = True
+
+        return self._execute_route(state, route_to_qpu, embedding)
+
+class MQTQAOPolicy(BasePolicy):
+    """
+    Policy basata sulla selezione predittiva del solutore tramite Machine Learning (modello Random Forest).
+
+    Lavori a riguardo:
+        - Volpe, D., et al. (2024). "A Predictive Approach for Selecting the Best Quantum Solver 
+          for an Optimization Problem". IEEE QCE. arXiv:2408.03613.
+        - Volpe, D., et al. (2024). "Towards an Automatic Framework for Solving Optimization 
+          Problems with Quantum Computers". IEEE QSW. arXiv:2406.12840.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(name="mqt_qao", **kwargs)
 
     def solve(self, bqm, global_embedding, is_all_embeddable, target_graph=None) -> Dict[str, Any]:
-        predicted_solver = self.predict_mqt_best_solver(bqm)
+        qpu_target = hybrid.InterruptableSimulatedAnnealingSubproblemSampler(num_reads=20, num_sweeps=1000)
+        cpu_fallback = hybrid.TabuSubproblemSampler(num_reads=20)
+
+        router = MQTAORouter(
+            qpu_sampler=qpu_target,
+            cpu_sampler=cpu_fallback,
+            target_graph=target_graph
+        )
+                
+        predicted_solver = router.predict_mqt_best_solver(bqm)
 
         policy_label = f"{self.name} ({predicted_solver})"
 
@@ -106,20 +135,18 @@ class MQTQAOPolicy(BasePolicy):
             }
 
         start_time = time.perf_counter()
-        qpu_target = hybrid.InterruptableSimulatedAnnealingSubproblemSampler(num_reads=20, num_sweeps=1000)
-        cpu_fallback = hybrid.TabuSubproblemSampler(num_reads=20)
 
-        router = ConfigurableRouterSampler(
-            mode=self.name,
-            global_embedding=global_embedding,
-            is_all_embeddable=is_all_embeddable,
-            predicted_solver_mqt=predicted_solver,
-            predict_fn=self.predict_mqt_best_solver,
-            qpu_sampler=qpu_target,
-            cpu_sampler=cpu_fallback,
-            target_graph=target_graph,
-            verbose=True
-        )
+        #router = ConfigurableRouterSampler(
+        #    mode=self.name,
+        #    global_embedding=global_embedding,
+        #    is_all_embeddable=is_all_embeddable,
+        #    predicted_solver_mqt=predicted_solver,
+        #    predict_fn=self.predict_mqt_best_solver,
+        #    qpu_sampler=qpu_target,
+        #    cpu_sampler=cpu_fallback,
+        #    target_graph=target_graph,
+        #    verbose=True
+        #)
 
         decomposer = hybrid.Unwind(
             hybrid.EnergyImpactDecomposer(
