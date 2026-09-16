@@ -13,25 +13,6 @@ class AlwaysCPURouter(BaseRouter):
     
     def next(self, state, **kwargs):
 
-        # ========== LOG DIAGNOSTICI ==========
-        print("\n===== DEBUG STATE PRIMA DEL SAMPLER =====")
-        print(f"Chiavi presenti nello state: {list(state.keys())}")
-
-        if 'subsamples' in state:
-            ss = state.subsamples
-            print(f"subsamples presente: Sì")
-            print(f"  - tipo: {type(ss)}")
-            if ss is not None:
-                print(f"  - variabili in subsamples: {list(ss.variables) if hasattr(ss, 'variables') else 'N/A'}")
-                print(f"  - numero samples: {len(ss)}")
-        else:
-            print("subsamples presente: No")
-
-        print(f"subproblem variabili: {list(state.subproblem.variables)}")
-        print(f"samples globali variabili: {list(state.samples.variables)}")
-        print("=========================================\n")
-        # =====================================
-
         return self._execute_route(state, route_to_qpu=False)
 
 

@@ -23,12 +23,14 @@ def solve_subqubo(sub_bqm: dimod.BinaryQuadraticModel, sampler_type: str) -> dim
         """
         Risolve direttamente il sub-QUBO con il sampler indicato.
         """
+        init_state = hybrid.State(subproblem=sub_bqm)
+
         if sampler_type == "CPU":
-            response = hybrid.TabuSubproblemSampler().sample(sub_bqm, timeout=20)
+            response = hybrid.TabuSubproblemSampler(num_reads=20).run(sub_bqm).result()
         else: #QPU
-            init_state = hybrid.State(subproblem=sub_bqm)
             final_state = hybrid.SimulatedAnnealingSubproblemSampler(num_reads=100).run(init_state).result()
-            response = final_state.subsamples
+
+        response = final_state.subsamples
 
         return response
 

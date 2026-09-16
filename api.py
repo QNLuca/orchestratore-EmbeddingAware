@@ -63,7 +63,9 @@ def run_pipeline(job_id: str, req: LPUrlRequest):
     """Esegue la pipeline di download, parsing e risoluzione aggiornando lo stato su Redis."""
     try:
         #stato iniziale
-        redis_client.set(f"job:{job_id}", json.dumps({"status": "PROCESSING", "progress": "Downloading and parsing .lp file..."}))
+        redis_client.set(f"job:{job_id}", json.dumps(
+             {"status": "PROCESSING", 
+              "progress": "Il file .lp è in fase di download e risoluzione..."}))
 
         #download e parsing del file .lp
         subqubo_obj, _, _ = orchestrator.load_qubo_lp(str(req.lp_url))
@@ -74,7 +76,9 @@ def run_pipeline(job_id: str, req: LPUrlRequest):
         if req.convergence:
             orchestrator.convergence = req.convergence
 
-        redis_client.set(f"job:{job_id}", json.dumps({"status": "PROCESSING", "progress": "Solving BQM via orchestrator..."}))
+        redis_client.set(f"job:{job_id}", json.dumps(
+             {"status": "PROCESSING", 
+              "progress": "Risoluzione del problema con metodo embedding-aware..."}))
 
         #risoluzione embedding-aware
         result = orchestrator.solve(subqubo_obj)
@@ -105,7 +109,7 @@ def run_benchmark_pipeline(job_id: str, req: LPUrlRequest):
         #stato iniziale
         redis_client.set(f"job:{job_id}", json.dumps({
             "status": "PROCESSING", 
-            "progress": "Downloading and parsing .lp file for benchmarking..."
+            "progress": "Il file .lp è in fase di download e risoluzione..."
         }))
 
         #parsing del file .lp
@@ -119,7 +123,7 @@ def run_benchmark_pipeline(job_id: str, req: LPUrlRequest):
 
         redis_client.set(f"job:{job_id}", json.dumps({
             "status": "PROCESSING", 
-            "progress": f"Running comparative benchmark across all policies (Variables: {len(subqubo_obj.variables)})..."
+            "progress": f"Benchmark comparativo in corso (Variabili: {len(subqubo_obj.variables)})..."
         }))
 
         #eseguo benchmark comparativo presente in benchmark.py

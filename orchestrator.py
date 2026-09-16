@@ -89,8 +89,8 @@ class AsyncRedisDispatcherSampler(hybrid.Runnable):
 
     def next(self, state, **kwargs):
         sub_bqm = state.subproblem
-        if sub_bqm is None or len(sub_bqm.variables) == 0:
-            return state
+        #if sub_bqm is None or len(sub_bqm.variables) == 0:
+        #    return state
 
         job_id = str(uuid.uuid4())
         task_id = str(uuid.uuid4())
@@ -116,7 +116,7 @@ class RouterSampler(hybrid.Runnable):
         max_chain_length: int = 8, 
         max_size: int = 40, 
         max_density: float = 0.5, 
-        max_avarage_degree: int = 15,
+        max_average_degree: int = 15,
         verbose: bool = False,
         **runopts
     ):
@@ -126,7 +126,7 @@ class RouterSampler(hybrid.Runnable):
         self.max_chain_length = max_chain_length
         self.max_size = max_size
         self.max_density = max_density
-        self.max_avarage_degree = max_avarage_degree
+        self.max_average_degree = max_average_degree
         self.verbose = verbose
 
         self.qpu_dispatcher = qpu_dispatcher
@@ -178,7 +178,7 @@ class RouterSampler(hybrid.Runnable):
         is_embeddable = (len(embedding) == num_vars) and (num_vars > 0)
         max_chain = max(chain_lengths) if chain_lengths else float('inf')
 
-        route_to_qpu = is_embeddable and (max_chain <= self.max_chain_length) and num_vars<self.max_size and density<self.max_density and avg_degree<self.max_avarage_degree
+        route_to_qpu = is_embeddable and (max_chain <= self.max_chain_length) and num_vars<self.max_size and density<self.max_density and avg_degree<self.max_average_degree
 
         target_device = "QPU" if route_to_qpu else "CPU"
 
@@ -367,10 +367,10 @@ class EmbeddingAwareOrchestrator:
             qpu_dispatcher=qpu_dispatcher,
             cpu_dispatcher=cpu_dispatcher,
             target_graph=self.target_graph,
-            max_chain_length=8,
-            max_size=231, #massima clique completa rappresentabile sulla QPU Zephyr modellata per il test
-            max_density=0.5,
-            max_avg_degree=max_avg_degree,
+            max_chain_length=max_chain_length,
+            max_size=max_size, #massima clique completa rappresentabile sulla QPU Zephyr modellata per il test
+            max_density=max_density,
+            max_average_degree=max_avg_degree,
             verbose=self.verbose
         )
 
@@ -419,6 +419,7 @@ class EmbeddingAwareOrchestrator:
 
         subproblem_pipeline = (
             subproblems
+            #| hybrid.Const(subsamples=None) #aggiunta per risolvere mismatch bqm e initial_state
             | hybrid.Map(router)
             | hybrid.Reduce(hybrid.Lambda(merge_substates))
             | hybrid.SplatComposer()
