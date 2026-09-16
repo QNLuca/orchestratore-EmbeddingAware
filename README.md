@@ -13,13 +13,22 @@ Il sistema coordina tramite dinamiche di routing risorse classiche (CPU/Tabu/SA)
 
 ---
 
+## TODO
+
+- [ ] Aggiungere metodi interazione QPU reale
+- [ ] Commentare e ripulire codice
+- [ ] Aggiungere ulteriori metriche per sperimentazione
+
+---
+
 ## Architettura del Progetto
 
 ```text
 .
 ├── policies/               # Strategie di risoluzione (Strategy Pattern)
-│   ├── base.py             # Classe astratta BasePolicy
-│   ├── alwaysQPU.py        # Policy basata su utilizzo QPU ogni volta che problema è embeddable
+│   ├── basePolicy.py       # Classe astratta BasePolicy per rappresentazione policy
+│   ├── baseRouter.py       # Classe astratta BaseRouter per indirizzamento verso CPU/QPU
+│   ├── alwaysQPU.py        # Policy basata su utilizzo QPU ogni volta che (sotto)problema è embeddable
 |   ├── alwaysCPU.py        # Policy basata su solo utilizzo CPU
 |   ├── qbsolv.py           # Policy basata su algoritmo di Dwave qbsolv
 |   ├── kerberos.py         # Policy basata su framework di Dwave kerberos
@@ -91,7 +100,8 @@ curl -X 'POST' \
   -d '{
   "lp_url": "https://example.com/problems/sample.lp",
   "lagrange_multiplier": 10.0,
-  "max_iter": 5
+  "max_iter": 5,
+  "convergence": 2
 }'
 
 ```
@@ -102,7 +112,7 @@ curl -X 'POST' \
 {
   "job_id": "550e8400-e29b-41d4-a716-446655440000",
   "status": "PROCESSING",
-  "message": "Il file LP è in fase di download e risoluzione."
+  "message": "Il file .lp è in fase di download e risoluzione."
 }
 
 ```
@@ -119,7 +129,9 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "lp_url": "https://example.com/problems/sample.lp",
-  "max_iter": 3
+  "lagrange_multiplier": 10,
+  "max_iter": 5,
+  "convergence": 2
 }'
 
 ```
