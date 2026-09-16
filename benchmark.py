@@ -36,11 +36,11 @@ def run_comparative_suite(bqm: Union[dimod.BinaryQuadraticModel, SubQUBO], orche
     #istanzio policy
     pipeline_policies: List[BasePolicy] = [
         AlwaysCPUPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
-        #KerberosPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
-        #QBSolvPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
-        #MQTQAOPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
-        #AlwaysQPUEmbeddablePolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
-        #OnlyMyFeaturesBasedPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
+        KerberosPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
+        QBSolvPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
+        MQTQAOPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
+        AlwaysQPUEmbeddablePolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
+        OnlyMyFeaturesBasedPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
     ]
 
     print(f"AVVIO BENCHMARK COMPARATIVO ROUTING POLICY (BQM N={len(bqm.variables)})")
