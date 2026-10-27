@@ -35,6 +35,7 @@ Il sistema coordina tramite dinamiche di routing risorse classiche (CPU/Tabu/SA)
 │   ├── mqt.py              # Policy con predizione ML (dal lavoro di Volpe D. et al, 2024)
 │   └── ...                 # Altre policy classiche/ibride
 ├── modelsRF/               # Modelli Random Forest (.pkl)
+├── test/                   # file .lp e risultati sperimentali
 ├── orchestrator.py         # Orchestratore centrale della pipeline con policy embedding-aware
 ├── benchmark.py            # Runner per la suite benchmark comparativa
 ├── api.py                  # Semplice FastAPI Web Server
