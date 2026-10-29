@@ -16,8 +16,8 @@ Il sistema coordina tramite dinamiche di routing risorse classiche (CPU/Tabu/SA)
 ## TODO
 
 - [ ] Aggiungere metodi interazione QPU reale
-- [ ] Commentare e ripulire codice
-- [ ] Aggiungere ulteriori metriche per sperimentazione
+- [x] Commentare e ripulire codice
+- [x] Aggiungere ulteriori metriche per sperimentazione
 
 ---
 
@@ -34,7 +34,7 @@ Il sistema coordina tramite dinamiche di routing risorse classiche (CPU/Tabu/SA)
 |   ├── kerberos.py         # Policy basata su framework di Dwave kerberos
 │   ├── mqt.py              # Policy con predizione ML (dal lavoro di Volpe D. et al, 2024)
 │   └── ...                 # Altre policy classiche/ibride
-├── modelsRF/               # Modelli Random Forest (.pkl)
+├── modelsRF/               # Modelli Random Forest (.pkl) per policy MQT-QAO
 ├── test/                   # file .lp e risultati sperimentali
 ├── orchestrator.py         # Orchestratore centrale della pipeline con policy embedding-aware
 ├── benchmark.py            # Runner per la suite benchmark comparativa
@@ -100,9 +100,11 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "lp_url": "https://example.com/problems/sample.lp",
-  "lagrange_multiplier": 10.0,
+  "lagrange_multiplier": 0, # default a 0 per gestione automatica
   "max_iter": 5,
-  "convergence": 2
+  "convergence": 2,
+  "chain_strength_prefactor": 0, # default a 0 per gestione automatica
+  "verbose": false
 }'
 
 ```
@@ -130,9 +132,11 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "lp_url": "https://example.com/problems/sample.lp",
-  "lagrange_multiplier": 10,
+  "lagrange_multiplier": 0, # default a 0 per gestione automatica
   "max_iter": 5,
-  "convergence": 2
+  "convergence": 2,
+  "chain_strength_prefactor": 0, # default a 0 per gestione automatica
+  "verbose": false
 }'
 
 ```
