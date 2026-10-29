@@ -53,6 +53,7 @@ def run_embedding_test_for_file(filepath, target_graph, num_runs=10):
         run_record = {
             "instance_id": os.path.basename(filepath),
             "num_run": seed+1,
+            "seed": seed,
             "success": False,
             "embedding_time": elapsed,
             "physical_qubits": np.nan,

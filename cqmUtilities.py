@@ -12,22 +12,22 @@ class CqmUtilities:
         """
         Riconverte il sample BQM nel formato del CQM originale e ne calcola l'ammissibilità.
         """
-        # 1. Mappa la soluzione dal BQM di nuovo allo spazio di variabili del CQM
+        #mappa la soluzione dal BQM di nuovo allo spazio di variabili del CQM
         cqm_sample = invert_func(best_sample_bqm)
 
-        # 2. Verifica se la soluzione rispetta TUTTI i vincoli del CQM
+        #verifica se la soluzione rispetta TUTTI i vincoli del CQM
         is_feasible = cqm.check_feasible(cqm_sample)
 
-        # 3. Calcola il dettaglio delle violazioni dei vincoli
-        # Restituisce un dizionario {nome_vincolo: valore_violazione}
+        #calcola il dettaglio delle violazioni dei vincoli
+        #restituisce un dizionario {nome_vincolo: valore_violazione}
         violations = cqm.violations(cqm_sample)
 
-        # 4. Metriche aggregate sulle violazioni
+        #metriche aggregate sulle violazioni
         num_violated_constraints = sum(1 for v in violations.values() if v > 0)
         total_violation_magnitude = sum(v for v in violations.values() if v > 0)
         max_violation = max(violations.values()) if violations else 0.0
 
-        # 5. Calcola l'energia effettiva della funzione obiettivo originale (senza penalità di Lagrange)
+        #calcola l'energia effettiva della funzione obiettivo originale (senza penalità di Lagrange)
         cqm_energy = cqm.objective.energy(cqm_sample)
 
         return {
@@ -38,5 +38,4 @@ class CqmUtilities:
             "total_violation_magnitude": float(total_violation_magnitude),
             "max_violation": float(max_violation),
             "cqm_objective_energy": float(cqm_energy),
-            #"violations_detail": {k: float(v) for k, v in violations.items() if v > 0} # vincoli violati
         }
