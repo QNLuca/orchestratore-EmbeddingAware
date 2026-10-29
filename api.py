@@ -8,8 +8,13 @@ import redis
 
 from benchmark import run_comparative_suite
 from orchestrator import EmbeddingAwareOrchestrator
+from loadLp import LoadLp
+from benchmark import execute_files_benchmark
 
 from dotenv import load_dotenv
+
+import traceback
+import logging
 
 #carica le variabili contenute nel file .env
 load_dotenv()
@@ -27,23 +32,42 @@ redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_respon
 #inizializzo l'orchestratore emebedding-aware
 orchestrator = EmbeddingAwareOrchestrator(
     policy_mode='embedding_aware',
-    max_iter=5,
-    convergence=2
+    max_iter=10,
+    convergence=3
 )
+
+benchmark_status = {
+    "code_version": "v1.0",
+    "running": False,
+    "current_file": None,
+    "completed": 0,
+    "total": 0
+}
+
+def background_benchmark_task():
+    global benchmark_status
+    benchmark_status["running"] = True
+    try:
+        execute_files_benchmark(orchestratorEA=orchestrator, status_dict=benchmark_status)
+    except Exception as e:
+        print(f"Errore durante l'esecuzione del benchmark: {e}")
+    finally:
+        benchmark_status["running"] = False
 
 ### MODELLI DI RICHIESTA E RISPOSTA ###
 class LPUrlRequest(BaseModel):
     model_config = ConfigDict(use_attribute_docstrings=True)
 
     lp_url: HttpUrl  = Field(      
-        examples=["https://qplib.zib.de/lp/QPLIB_3852.lp"]
+        examples=["https://qplib.zib.de/lp/QPLIB_5881.lp"]
         )
     """
     URL al file .lp da elaborare.
     """
-    lagrange_multiplier: Optional[float] = 10.0
+    lagrange_multiplier: Optional[float] = 0
     """
     Fattore di penalizzazione applicato per la conversione dei vincoli dell'istanza in termini quadratici di energia nel BQM.
+    \n0 = auto.
     """
     max_iter: Optional[int] = 5
     """
@@ -52,6 +76,15 @@ class LPUrlRequest(BaseModel):
     convergence: Optional[int] = 2
     """
     Soglia di convergenza all'energia minima oltre la quale terminare anticipatamente la risoluzione.
+    """
+    chain_strength_prefactor: Optional[float] = 0
+    """
+    Prefactor usato per scaling della chain strength. Per problemi non patologici il range raccomandato è tra [0.5-2].
+    \n0 = auto.
+    """
+    verbose: Optional[bool] = False
+    """
+    Stampa più informazioni sull'esecuzione dell'orchestratore.
     """
 
 class JobSubmitResponse(BaseModel):
@@ -68,26 +101,33 @@ def run_pipeline(job_id: str, req: LPUrlRequest):
               "progress": "Il file .lp è in fase di download e risoluzione..."}))
 
         #download e parsing del file .lp
-        subqubo_obj, _, _ = orchestrator.load_qubo_lp(str(req.lp_url))
+        lagrange_mult = req.lagrange_multiplier if req.lagrange_multiplier else None
+
+        subqubo_obj, meta = LoadLp.load_qubo_lp(str(req.lp_url), lagrange_multiplier=lagrange_mult)
 
         if req.max_iter:
             orchestrator.max_iter = req.max_iter
 
         if req.convergence:
-            orchestrator.convergence = req.convergence
+            orchestrator.convergence = req.convergence  
+        
+        if req.verbose:
+            meta['verbose'] = True
+
+        meta["chain_strength_prefactor"] = req.chain_strength_prefactor if req.chain_strength_prefactor else None
+
 
         redis_client.set(f"job:{job_id}", json.dumps(
              {"status": "PROCESSING", 
               "progress": "Risoluzione del problema con metodo embedding-aware..."}))
 
         #risoluzione embedding-aware
-        result = orchestrator.solve(subqubo_obj)
+        result = orchestrator.solve(subqubo_obj, meta)
 
         final_payload = {
             "status": "COMPLETED",
             "lp_url": str(req.lp_url),
             "num_variables": len(subqubo_obj.variables),
-            #"bqm_serialized": subqubo_obj.to_serializable(),
             "result": result
         }
 
@@ -99,7 +139,7 @@ def run_pipeline(job_id: str, req: LPUrlRequest):
             "status": "FAILED",
             "error": str(e)
         }
-        redis_client.setex(f"job:{job_id}", 86400, json.dumps(error_payload))
+        redis_client.setex(f"job:{job_id}", 86400, json.dumps(error_payload, default=str))
 
 def run_benchmark_pipeline(job_id: str, req: LPUrlRequest):
     """
@@ -113,13 +153,21 @@ def run_benchmark_pipeline(job_id: str, req: LPUrlRequest):
         }))
 
         #parsing del file .lp
-        subqubo_obj, _, meta = orchestrator.load_qubo_lp(str(req.lp_url))
+        lagrange_mult = req.lagrange_multiplier if req.lagrange_multiplier else None
+
+        subqubo_obj, meta = LoadLp.load_qubo_lp(str(req.lp_url), lagrange_mult)
 
         if req.max_iter:
                 orchestrator.max_iter = req.max_iter
         
         if req.convergence:
                 orchestrator.convergence = req.convergence
+
+        if req.verbose:
+                meta['verbose'] = True
+
+        meta["chain_strength_prefactor"] = req.chain_strength_prefactor if req.chain_strength_prefactor else None
+
 
         redis_client.set(f"job:{job_id}", json.dumps({
             "status": "PROCESSING", 
@@ -130,6 +178,8 @@ def run_benchmark_pipeline(job_id: str, req: LPUrlRequest):
         benchmark_results = run_comparative_suite(
             bqm=subqubo_obj,
             orchestratorEA=orchestrator,
+            max_iter=req.max_iter,
+            convergence=req.convergence,
             meta = meta
         )
 
@@ -146,12 +196,16 @@ def run_benchmark_pipeline(job_id: str, req: LPUrlRequest):
         redis_client.setex(f"job:{job_id}", 86400, json.dumps(final_payload, default=str))
 
     except Exception as e:
+        #stampa il traceback nei log di sistema
+        tb_str = traceback.format_exc()
+        logging.error(f"[JOB FAILED {job_id}] Errore pipeline:\n{tb_str}")
+
         error_payload = {
             "status": "FAILED",
             "type": "BENCHMARK",
             "error": str(e)
         }
-        redis_client.setex(f"job:{job_id}", 86400, json.dumps(error_payload))
+        redis_client.setex(f"job:{job_id}", 86400, json.dumps(error_payload, default=str))
 
 ### ENDPOINT API ###
 
@@ -185,6 +239,17 @@ def benchmark_lp_from_url(request: LPUrlRequest, background_tasks: BackgroundTas
         message="Il file .lp è in fase di elaborazione per il benchmark comparativo."
     )
 
+@app.post("/benchmark-local-files")
+def start_benchmark(background_tasks: BackgroundTasks):
+    if benchmark_status["running"]:
+        raise HTTPException(status_code=400, detail="Un benchmark è già in esecuzione!")
+    
+    background_tasks.add_task(background_benchmark_task)
+    return {"message": "Benchmark avviato con successo in background."}
+
+@app.get("/benchmark-local-files-status")
+def get_benchmark_status():
+    return benchmark_status
 
 @app.get("/status/{job_id}")
 def get_job_status(job_id: str) -> Dict[str, Any]:

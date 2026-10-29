@@ -1,16 +1,17 @@
 import hybrid
 import dimod
 from abc import ABC, abstractmethod
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 class BasePolicy(ABC):
     """Classe base astratta per tutte le policy di risoluzione."""
     
-    def __init__(self, name: str, subproblem_size: int = 40, max_iter: int = 3, convergence: int = 3):
+    def __init__(self, name: str, embedding_time: Optional[float] = None, subproblem_size: int = 40, max_iter: int = 3, convergence: int = 3):
         self.name = name
         self.subproblem_size = subproblem_size
         self.max_iter = max_iter
         self.convergence = convergence
+        self.embedding_time = embedding_time
 
     @abstractmethod
     def solve(

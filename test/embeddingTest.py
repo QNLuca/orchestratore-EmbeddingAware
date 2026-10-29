@@ -102,7 +102,7 @@ def run_embedding_test_for_file(filepath, target_graph, num_runs=10):
                     "median_chain": float(median_c),
                     "std_chain": float(std_c),
                     "skewness": float(skewness),
-                    "has_critical_chain": bool(max_c > 8),
+                    "has_critical_chain": bool(max_c > 7),
                     **run_thresholds,
                 }
             )
@@ -146,7 +146,7 @@ def benchmark_zephyr_embedding():
     os.makedirs(results_dir, exist_ok=True)
 
     single_runs_path = os.path.join(
-        results_dir, "embedding_runs_results_DEFDEF.parquet"
+        results_dir, "embedding_runs_results.parquet"
     )
 
     #resume automatico basato sulle singole run

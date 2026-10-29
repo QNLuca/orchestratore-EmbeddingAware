@@ -164,16 +164,16 @@ curl -X 'GET' 'http://localhost:8000/status/550e8400-e29b-41d4-a716-446655440000
       "qpu_calls": 2,
       "cpu_calls": 3,
       "qpu_utilization_ratio": 0.4,
-      "iterations": 3
+      ...
     },
     {
-      "policy": "mqt_qao (QA)",
+      "policy": "mqt_qao",
       "best_energy": -142.10,
       "wall_clock_time": 0.89,
       "qpu_calls": 1,
       "cpu_calls": 4,
       "qpu_utilization_ratio": 0.2,
-      "iterations": 3
+      ...
     }
   ]
 }

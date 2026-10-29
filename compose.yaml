@@ -6,6 +6,8 @@ services:
     container_name: subqubo-api
     ports:
       - "8000:8000"  #mappa la porta 8000 del container su macchina locale
+    volumes:
+      - .:/app
     depends_on:
       - redis
     networks:
@@ -22,8 +24,10 @@ services:
   worker-cpu:
     build: .
     volumes:
-      - .:/app  # Mappa la cartella locale dentro il container
+      - .:/app  #mappa la cartella locale dentro il container
     command: python worker.py
+    environment:
+        - TARGET_QUEUE=cpu_queue
     depends_on:
       redis:
         condition: service_started
@@ -37,27 +41,13 @@ services:
     volumes:
       - .:/app  #mappa la cartella locale dentro il container
     command: python worker.py
+    environment:
+        - TARGET_QUEUE=qpu_queue
     depends_on:
       redis:
         condition: service_started
     deploy:
       replicas: 1  #numero di gestori code QPU
-    networks:
-      - hybrid_net
-
-  orchestrator:
-    build: .
-    container_name: subqubo-orchestrator
-    volumes:
-      - .:/app
-    command: python orchestrator.py
-    depends_on:
-      redis:
-        condition: service_started
-      worker-cpu:
-        condition: service_started
-      worker-qpu:
-        condition: service_started
     networks:
       - hybrid_net
 
