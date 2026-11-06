@@ -5,6 +5,9 @@ from dwave.embedding.chain_breaks import majority_vote
 from dwave.embedding.chain_strength import uniform_torque_compensation
 import dwave.graphs as dnx
 
+from dwave.system import DWaveSampler, FixedEmbeddingComposite
+import numpy as np
+
 from subQUBO import SubQUBO
 
 class BaseRouter(hybrid.Runnable):
@@ -17,8 +20,7 @@ class BaseRouter(hybrid.Runnable):
         self.cpu_calls = 0
         self.chain_strength_prefactor = chain_strength_prefactor
 
-    def _execute_route(self, state, route_to_qpu: bool, embedding=None):
-        t0 = time.perf_counter()
+    def _execute_route(self, state, route_to_qpu: bool, qpu_identity, embedding=None):
 
         if route_to_qpu:
             self.qpu_calls += 1
@@ -33,40 +35,81 @@ class BaseRouter(hybrid.Runnable):
             else:
                 chain_strength = uniform_torque_compensation(
                     qpu_state, embedding=embedding, prefactor=1.414
-                )              
+                )
+
+            if qpu_identity:
+                qpu_sampler = DWaveSampler(solver=dict(identity=qpu_identity))
                 
-                            
-            target_bqm = embed_bqm(
-                qpu_state, 
-                embedding=embedding, 
-                target_adjacency=dnx.zephyr_graph(12),
-                chain_strength=chain_strength
-            )
+                fixed_composite = FixedEmbeddingComposite(qpu_sampler, embedding=embedding)
+
+                t_start = time.perf_counter()
+
+                res_state = fixed_composite.sample(
+                    qpu_state,
+                    chain_strength=chain_strength,
+                    num_reads=40,
+                    annealing_time = 20
+                )
+                t_end = time.perf_counter()
                 
-            init_state = hybrid.State.from_problem(target_bqm)
+                wall_service_time = t_end - t_start
 
-            end_state = self.qpu_sampler.run(init_state).result()
+                timing_info = res_state.info.get('timing', {})
+                
+                #Raccolti tutti metadati temporali
+                qpu_full_timing = {
+                    "qpu_sampling_time": timing_info.get('qpu_sampling_time'),
+                    "qpu_anneal_time_per_sample": timing_info.get('qpu_anneal_time_per_sample'),
+                    "qpu_readout_time_per_sample": timing_info.get('qpu_readout_time_per_sample'),
+                    "qpu_access_time": timing_info.get('qpu_access_time'),
+                    "qpu_access_overhead_time": timing_info.get('qpu_access_overhead_time'),
+                    "qpu_programming_time": timing_info.get('qpu_programming_time'),
+                    "qpu_delay_time_per_sample": timing_info.get('qpu_delay_time_per_sample'),
+                    "total_post_processing_time": timing_info.get('total_post_processing_time'),
+                    "post_processing_overhead_time": timing_info.get('post_processing_overhead_time'),
+                    "service_time": wall_service_time
+                }
 
-            physical_sampleset = end_state.samples
+                chain_break_fraction = res_state.record.chain_break_fraction #media fra tutte le letture
 
-            break_freq_dict = chain_break_frequency(physical_sampleset, embedding) # Returns: dict: Frequency of chain breaks as a dict in the form {s: f, ...},  where s is a variable in the source graph, and frequency, a float, is the fraction of broken chains.
+                avg_chain_break = float(np.mean(chain_break_fraction)) if len(chain_break_fraction) > 0 else 0.0
+                
+                emb_metrics = SubQUBO.compute_advanced_embedding_metrics(embedding, qpu_state, avg_chain_break)
 
-            chain_break_fraction = 0.0
-            if break_freq_dict:
-                #calcola la media dei valori nel dizionario
-                chain_break_fraction = sum(break_freq_dict.values()) / len(break_freq_dict)
+                extra_metrics = {
+                    "from_qpu": True,
+                    "chain_break_fraction": avg_chain_break,
+                     **qpu_full_timing,
+                     **emb_metrics
+                }
+                
+            else:              
+                target_bqm = embed_bqm(
+                    qpu_state, 
+                    embedding=embedding, 
+                    target_adjacency=dnx.zephyr_graph(12),
+                    chain_strength=chain_strength
+                )
 
-            sampleset = unembed_sampleset(physical_sampleset, embedding, qpu_state, chain_break_method=majority_vote)
+                init_state = hybrid.State.from_problem(target_bqm)
 
-            res_state = sampleset
+                end_state = self.qpu_sampler.run(init_state).result()
 
-            emb_metrics = SubQUBO.compute_advanced_embedding_metrics(embedding, state.subproblem, chain_break_fraction)
+                physical_sampleset = end_state.samples
 
-            extra_metrics = {
-                            "from_qpu": True,
-                            "chain_break_fraction": chain_break_fraction,
-                            **emb_metrics
-                        }
+                chain_break_fraction = list(chain_break_frequency(physical_sampleset, embedding).values()) # Returns: dict: Frequency of chain breaks as a dict in the form {s: f, ...},  where s is a variable in the source graph, and frequency, a float, is the fraction of broken chains.
+
+                avg_chain_break = float(np.mean(chain_break_fraction)) if len(chain_break_fraction) > 0 else 0.0
+
+                res_state = unembed_sampleset(physical_sampleset, embedding, qpu_state, chain_break_method=majority_vote)
+
+                emb_metrics = SubQUBO.compute_advanced_embedding_metrics(embedding, qpu_state, avg_chain_break)
+
+                extra_metrics = {
+                                "from_qpu": True,
+                                "chain_break_fraction": avg_chain_break,
+                                **emb_metrics
+                            }
 
         else:
             self.cpu_calls += 1

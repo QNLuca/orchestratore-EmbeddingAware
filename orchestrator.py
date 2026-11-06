@@ -12,6 +12,7 @@ import hybrid
 import numpy as np
 import pickle
 
+from dwave.system import DWaveSampler, FixedEmbeddingComposite
 from dwave.embedding import embed_bqm, unembed_sampleset, chain_break_frequency
 from dwave.embedding.chain_breaks import majority_vote
 from dwave.embedding.chain_strength import uniform_torque_compensation
@@ -19,14 +20,17 @@ from dwave.embedding.chain_strength import uniform_torque_compensation
 import redis
 from rq import Queue
 
+from utils.mockSolverOffline import OfflineQPUSolver
 from subQUBO import SubQUBO
-from cqmUtilities import CqmUtilities
+from utils.cqmUtilities import CqmUtilities
 
 from dotenv import load_dotenv
 from cachetools import LRUCache
 
 #carica le variabili contenute nel file .env
 load_dotenv()
+
+DWAVE_API_KEY = os.getenv("DWAVE_API_TOKEN")
 
 #config Redis
 REDIS_HOST = os.getenv("REDIS_HOST", "redis")
@@ -46,12 +50,19 @@ class AsyncRedisDispatcherSampler(hybrid.Runnable):
     Dispatcher asiincrono, invia il task a Redis e restituisce un Future.
     Consente a hybrid.Map di inviare N sub-QUBO in parallelo ai worker.
     """
-    def __init__(self, target_queue: str, connection_pool: redis.ConnectionPool, timeout: int = 500, max_workers: int = 8, meta: Dict = None, **runopts):
+    def __init__(self, target_queue: str, connection_pool: redis.ConnectionPool, timeout: int = 500, max_workers: int = 8, meta: Dict = None, qpu_identity = None, **runopts):
         super().__init__(**runopts)
         self.target_queue = target_queue
         self.timeout = timeout
         self.pool_ref = connection_pool
         self.meta = meta
+
+        #inizializzo una sola volta
+        self.qpu_sampler = None
+        self.realQPU = False
+        if DWAVE_API_KEY:
+            self.realQPU = True
+            self.qpu_sampler = DWaveSampler(solver=dict(identity=qpu_identity)) if qpu_identity else DWaveSampler(solver={'topology__type': 'zephyr'})
 
         #Istanza Redis e Coda PERSISTENTI create una sola volta
         self.r_client = redis.Redis(connection_pool=self.pool_ref, decode_responses=False)
@@ -69,6 +80,15 @@ class AsyncRedisDispatcherSampler(hybrid.Runnable):
         self.fn = 0  # False Negative
 
         self.all_eqi = []
+        self.all_max_chains = []
+        self.all_mean_chains = []
+        self.all_median_chains = []
+        self.all_long_chain_fractions = []
+        self.all_expansions = []
+        self.all_physical_nodes = []
+        self.estimated_runtime_total = 0
+
+        self.lock = threading.Lock()
 
     def next(self, state, **kwargs):
 
@@ -87,9 +107,9 @@ class AsyncRedisDispatcherSampler(hybrid.Runnable):
         #sottomissione del task alla funzione eseguita dal worker RQ
         job = self.q.enqueue(
             'worker.solve_subqubo_rq', 
-            args=(sub_bqm, self.target_queue, embedding, chain_strength_prefactor),
+            args=(sub_bqm, self.target_queue, embedding, chain_strength_prefactor, self.realQPU, self.qpu_sampler),
             timeout=self.timeout,
-            result_ttl=300,  #mantengo il risultato per 500 secondi prima del cleanup
+            result_ttl=300,  #mantengo il risultato per 300 secondi prima del cleanup
             job_id=job_id
         )
 
@@ -118,24 +138,34 @@ class AsyncRedisDispatcherSampler(hybrid.Runnable):
                     #estrazione metriche del proxy inviate dal worker
                     proxy_metrics = sampleset.info.get("proxy_metrics", {})
                     if proxy_metrics:
-                        self.total_build_time += proxy_metrics.get("physical_build_time", 0.0)
-                        self.total_solve_time += proxy_metrics.get("solve_time", 0.0)
-                        self.total_unembed_time += proxy_metrics.get("unembed_time", 0.0)
-                        good_embedding = proxy_metrics.get("good_embedding", False)
-                        from_qpu = proxy_metrics.get("from_qpu", False)
-                        if "chain_break_fraction" in proxy_metrics:
-                             self.chain_break_fractions.append(proxy_metrics["chain_break_fraction"])
-                        if "eqi" in proxy_metrics:
-                            self.all_eqi.append(proxy_metrics["eqi"])
+                        with self.lock:
+                            self.total_solve_time += float(proxy_metrics["solve_time"]) #sia qpu che cpu
+                            good_embedding = proxy_metrics.get("good_embedding", False)
+                            from_qpu = proxy_metrics.get("from_qpu", False)
+                            real_qpu = proxy_metrics.get("real_qpu", False)
+                            if "chain_break_fraction" in proxy_metrics:
+                                 self.chain_break_fractions.append(proxy_metrics["chain_break_fraction"])
+                            if "eqi" in proxy_metrics:
+                                self.all_eqi.append(proxy_metrics["eqi"])
+                                self.all_max_chains.append(proxy_metrics["max_chain"])
+                                self.all_mean_chains.append(proxy_metrics["mean_chain"])
+                                self.all_median_chains.append(proxy_metrics["median_chain"])
+                                self.all_long_chain_fractions.append(proxy_metrics["long_chain_fraction"])
+                                self.all_expansions.append(proxy_metrics["expansion"]) # == mean_chain
+                                self.all_physical_nodes.append(proxy_metrics["physical_nodes"])
+                            if from_qpu and not real_qpu:
+                                self.total_build_time += float(proxy_metrics["physical_build_time"])
+                                self.total_unembed_time += float(proxy_metrics["unembed_time"])
+                                self.estimated_runtime_total += float(proxy_metrics["estimated_runtime_us"])
 
-                        if good_embedding and from_qpu:
-                            self.tp += 1
-                        if not good_embedding and from_qpu:
-                            self.fp +=1
-                        if good_embedding and not from_qpu:
-                            self.fn +=1
-                        if not good_embedding and not from_qpu:
-                            self.tn +=1
+                            if good_embedding and from_qpu:
+                                self.tp += 1
+                            if not good_embedding and from_qpu:
+                                self.fp +=1
+                            if good_embedding and not from_qpu:
+                                self.fn +=1
+                            if not good_embedding and not from_qpu:
+                                self.tn +=1
 
                     return state.updated(subsamples=sampleset)
         finally:
@@ -154,6 +184,7 @@ class RouterSampler(hybrid.Runnable):
         is_all_embeddable: bool,
         qpu_dispatcher: hybrid.Runnable, 
         cpu_dispatcher: hybrid.Runnable,
+        seed: int,
         target_graph=None, 
         max_chain_length: int = 7,
         verbose: bool = 0,
@@ -163,6 +194,7 @@ class RouterSampler(hybrid.Runnable):
         self.mode = mode
         self.target_graph = target_graph
         self.max_chain_length = max_chain_length
+        self.seed = seed
 
         self.qpu_dispatcher = qpu_dispatcher
         self.cpu_dispatcher = cpu_dispatcher
@@ -220,7 +252,7 @@ class RouterSampler(hybrid.Runnable):
 
         #STRATEGIA 3: Fallback su minorminer se non trovato già altrove
         if embedding is None:
-            computed_emb, computed_emb_is_all, _ = sub_qubo.compute_embedding(sub_bqm, self.target_graph)
+            computed_emb, computed_emb_is_all, _ = sub_qubo.compute_embedding(sub_bqm, self.target_graph, self.seed)
             embedding = computed_emb
 
             if computed_emb and computed_emb_is_all:
@@ -321,13 +353,12 @@ class EmbeddingAwareOrchestrator:
     def __init__(
         self,
         policy_mode: str = 'embedding_aware', 
-        target_graph=None,
+        
         subproblem_size: Optional[int] = None,
         max_iter: int = 10,
         convergence: int = 3,
     ):
         self.policy_mode = policy_mode
-        self.target_graph = target_graph or dnx.zephyr_graph(12)
         self.subproblem_size = subproblem_size
         self.max_iter = max_iter
         self.convergence = convergence
@@ -343,6 +374,9 @@ class EmbeddingAwareOrchestrator:
 
     def solve(self, bqm: dimod.BinaryQuadraticModel, 
               meta: Dict,
+              seed=None,
+              target_graph=None,
+              qpu_identity= None,
               global_embedding_bench: Optional[Dict] = None, 
               is_all_embeddable_bench: Optional[bool] = None, 
               embedding_time: Optional[float] = None, 
@@ -350,6 +384,8 @@ class EmbeddingAwareOrchestrator:
         """
         Risolve un BQM applicando il routing dinamico basato su embedding e topologia.
         """
+        target_graph = target_graph or dnx.zephyr_graph(12)
+
         invert_func = meta.get("invert_func", None)
                 
         cqm = meta.get("cqm",None)
@@ -367,7 +403,7 @@ class EmbeddingAwareOrchestrator:
         mybqm = SubQUBO(bqm)
 
         max_chain_length = 7
-        max_global_size = 1337 #embedding più grande portato a termine con successo con 300s di timeout nei test
+        max_global_size = 1337
         
         #features del bqm
         bqm_num_vars = bqm.num_variables
@@ -390,7 +426,7 @@ class EmbeddingAwareOrchestrator:
             if verbose:
                 print(f"num_var: {bqm_num_vars}, density: {bqm_density}, avg_degree: {bqm_avg_degree}")
             if bqm_num_vars<max_global_size and is_qpu_ready:
-                global_embedding, is_all_embeddable, _ = mybqm.compute_embedding(bqm, self.target_graph)
+                global_embedding, is_all_embeddable, _ = mybqm.compute_embedding(bqm, target_graph, seed)
             else:
                 global_embedding = {}
                 is_all_embeddable = False
@@ -403,23 +439,24 @@ class EmbeddingAwareOrchestrator:
             t_embedding = embedding_time
 
         #inizializzazione dei Dispatcher Redis per le rispettive code
-        qpu_dispatcher = AsyncRedisDispatcherSampler(target_queue="qpu_queue", connection_pool=self.redis_pool, meta= meta)
+        qpu_dispatcher = AsyncRedisDispatcherSampler(target_queue="qpu_queue", connection_pool=self.redis_pool, meta= meta, qpu_identity= qpu_identity)
         cpu_dispatcher = AsyncRedisDispatcherSampler(target_queue="cpu_queue", connection_pool=self.redis_pool)
 
         chain_lengths_global = [len(chain) for chain in global_embedding.values()] if global_embedding else []
         max_chain_global = max(chain_lengths_global) if chain_lengths_global else float('inf')
+        
+        physical_nodes_global = sum(chain_lengths_global)
 
-        physical_nodes = sum(chain_lengths_global)
-
-        expansion_global = physical_nodes / bqm_num_vars if bqm_num_vars > 0 else 0.0
+        expansion_global = physical_nodes_global / bqm_num_vars if bqm_num_vars > 0 else 0.0
 
         router = RouterSampler(
             mode=self.policy_mode,
             global_embedding=global_embedding,
             is_all_embeddable=is_all_embeddable,
+            seed = seed,
             qpu_dispatcher=qpu_dispatcher,
             cpu_dispatcher=cpu_dispatcher,
-            target_graph=self.target_graph,
+            target_graph=target_graph,
             max_chain_length=max_chain_length,
             verbose=verbose
         )
@@ -433,9 +470,9 @@ class EmbeddingAwareOrchestrator:
             expansion_global <= 5.0
             )
 
-        
+        start_time = time.perf_counter()
+
         if should_run_direct:
-            print("Risoluzione diretta")
 
             if meta is not None and chain_strength_prefactor is not None:
                 chain_strength = uniform_torque_compensation(
@@ -447,48 +484,102 @@ class EmbeddingAwareOrchestrator:
                     bqm, embedding=global_embedding, prefactor=1.414
                 )
 
+            if DWAVE_API_KEY:
+                
+                if benchmark:  
+                    qpu_sampler = DWaveSampler(solver=dict(identity=qpu_identity))
+                else:
+                    qpu_sampler = DWaveSampler(solver={'topology__type': 'zephyr'})
+                
+                fixed_composite = FixedEmbeddingComposite(qpu_sampler, embedding=global_embedding)
 
-            t_build_0 = time.perf_counter()
-            target_bqm = embed_bqm(
-                bqm, 
-                embedding=global_embedding, 
-                target_adjacency=self.target_graph,
-                chain_strength=chain_strength
-            )
-            t_build = time.perf_counter() - t_build_0
+                t_start = time.perf_counter()
+
+                res_sampleset = fixed_composite.sample(
+                    bqm,
+                    chain_strength=chain_strength,
+                    num_reads=40,
+                    annealing_time =20
+                )
+
+                t_end = time.perf_counter()
+
+                wall_service_time = t_end - t_start
+
+                final_time = t_end - start_time
+
+                chain_break_fraction = res_sampleset.record.chain_break_fraction #media fra tutte le letture
+
+                timing_info = res_sampleset.info.get('timing', {})
+                
+                #Raccolti tutti metadati temporali
+                qpu_full_timing = {
+                    "qpu_sampling_time": timing_info.get('qpu_sampling_time'),
+                    "qpu_anneal_time_per_sample": timing_info.get('qpu_anneal_time_per_sample'),
+                    "qpu_readout_time_per_sample": timing_info.get('qpu_readout_time_per_sample'),
+                    "qpu_access_time": timing_info.get('qpu_access_time'),
+                    "qpu_access_overhead_time": timing_info.get('qpu_access_overhead_time'),
+                    "qpu_programming_time": timing_info.get('qpu_programming_time'),
+                    "qpu_delay_time_per_sample": timing_info.get('qpu_delay_time_per_sample'),
+                    "total_post_processing_time": timing_info.get('total_post_processing_time'),
+                    "post_processing_overhead_time": timing_info.get('post_processing_overhead_time'),
+                    "service_time": wall_service_time
+                }
+
+                
+                extra_metrics = {
+                     **qpu_full_timing,
+                }
+
+            else:
+                t_build_0 = time.perf_counter()
+                target_bqm = embed_bqm(
+                    bqm, 
+                    embedding=global_embedding, 
+                    target_adjacency=target_graph,
+                    chain_strength=chain_strength
+                )
+                t_build = time.perf_counter() - t_build_0
+
+                ################# PER TEST LOCALE QPU_ACCESS_TIME #####################
+                offline_solver = OfflineQPUSolver()
+
+                estimated_runtime_us = offline_solver.estimate_qpu_access_time(
+                    num_qubits=len(target_bqm.variables), 
+                    num_reads=40, 
+                    annealing_time=20
+                )
+                ################################################################
+
+                t_start_solve = time.perf_counter()
+                init_state = hybrid.State.from_problem(target_bqm)
+
+                #istanzia ed esegui il sampler
+                sa_workflow = hybrid.SimulatedAnnealingProblemSampler(num_reads=50, num_sweeps=1000)
+                end_state = sa_workflow.run(init_state).result()
+
+                physical_sampleset = end_state.samples
+                t_solve_total = time.perf_counter() - t_start_solve
+
+                t_unembed_0 = time.perf_counter()
+                res_sampleset = unembed_sampleset(physical_sampleset, global_embedding, bqm, chain_break_method=majority_vote)
+                t_unembed = time.perf_counter() - t_unembed_0
+
+                final_time = time.perf_counter() - start_time
+
+                chain_break_fraction = list(chain_break_frequency(physical_sampleset, global_embedding).values()) # Returns: dict: Frequency of chain breaks as a dict in the form {s: f, ...},  where s is a variable in the source graph, and frequency, a float, is the fraction of broken chains.
+
+                avg_chain_break = np.mean(chain_break_fraction) if len(chain_break_fraction) > 0 else 0.0
+
+                extra_metrics = {
+                    "physical_build_time": t_build,
+                    "unembed_time": t_unembed,
+                    "t_solve": t_solve_total
+                }
+
+            total_wall_clock = final_time + t_embedding
             
-            t_start_solve = time.perf_counter()
-            init_state = hybrid.State.from_problem(target_bqm)
-
-            #istanzia ed esegui il sampler
-            sa_workflow = hybrid.SimulatedAnnealingProblemSampler(num_reads=50, num_sweeps=1000)
-            end_state = sa_workflow.run(init_state).result()
-
-            physical_sampleset = end_state.samples
-
-            t_solve_total = time.perf_counter() - t_start_solve
-
-            break_freq_dict = chain_break_frequency(physical_sampleset, global_embedding) # Returns: dict: Frequency of chain breaks as a dict in the form {s: f, ...},  where s is a variable in the source graph, and frequency, a float, is the fraction of broken chains.
-
-            chain_break_fraction = 0.0  
-            if break_freq_dict:
-                #calcola la media dei valori nel dizionario
-                chain_break_fraction = sum(break_freq_dict.values()) / len(break_freq_dict)
-
-
-            t_unembed_0 = time.perf_counter()
-            logical_sampleset = unembed_sampleset(physical_sampleset, global_embedding, bqm, chain_break_method=majority_vote)
-            t_unembed = time.perf_counter() - t_unembed_0
-            
-            total_wall_clock = t_solve_total + t_embedding + t_build + t_unembed
-
-            extra_metrics = {
-                "physical_build_time": t_build,
-                "unembed_time": t_unembed,
-                "chain_break_fraction": chain_break_fraction,
-            }
-
-            best_energy = float(logical_sampleset.first.energy)
+            best_energy = float(res_sampleset.first.energy)
 
             if is_maximize:
                 best_energy = -best_energy
@@ -498,21 +589,27 @@ class EmbeddingAwareOrchestrator:
             rel_gap = abs(best_energy - bestknown_solution) / abs(bestknown_solution) if bestknown_solution else None
             abs_gap = abs(best_energy - bestknown_solution) if bestknown_solution is not None else None
 
+            best_sample = dict(res_sampleset.first.sample)
 
-            best_sample = dict(logical_sampleset.first.sample)
+            emb_metrics = SubQUBO.compute_advanced_embedding_metrics(global_embedding,bqm,avg_chain_break)
 
-            good_embedding = SubQUBO.compute_advanced_embedding_metrics(global_embedding,bqm,chain_break_fraction)
+            good_embedding = bool(emb_metrics["good_embedding"])
+
+            eqi = emb_metrics["eqi"]
+            median_chain = float(emb_metrics["median_chain"])
+            mean_chain = float(emb_metrics["mean_chain"])
+            long_chain_fraction = float(emb_metrics["long_chain_fraction"])
+
 
             cqmResults = {}
 
             if len(cqm.constraints)>0:
                 cqmResults = CqmUtilities.evaluate_cqm_feasibility(best_sample,invert_func, cqm)
 
-            print("Risoluzione diretta terminata.")
-
             results = {
                 #Routing e Policy
                 "instance_id": lp_filename,
+                "seed": seed,
                 "is_maximization_objective": is_maximize,
                 "policy": self.policy_mode,
                 "qpu_calls": 1,
@@ -526,16 +623,28 @@ class EmbeddingAwareOrchestrator:
                 "qplib_reference": bestknown_solution,
                 "abs_gap": abs_gap,
                 "rel_gap": rel_gap,
-                #Proxy Physical Metrics
-                "solve_time": t_solve_total,
+
                 #End-to-End Breakdown
                 "wall_clock_time": total_wall_clock,
                 "time_global_embedding": t_embedding,
                 "time_total_embedding": t_embedding,
+
+                "chain_break_fraction": avg_chain_break,
                 "decomposed": False,
+
+                "chain_strength_prefactor": chain_strength_prefactor if chain_strength_prefactor is not None else 1.414,
+
+                "eqi_mean": eqi,
+                "max_chain": max_chain_global,
+                "mean_chain": mean_chain,
+                "median_chain": median_chain,
+                "physical_nodes": physical_nodes_global,
+                "expansion": expansion_global,
+                "long_chain_fraction": long_chain_fraction,
 
                 **extra_metrics,
                 **cqmResults,
+                "estimated_leap_qpu_time_us": estimated_runtime_us,
             }
 
             if verbose:
@@ -616,6 +725,14 @@ class EmbeddingAwareOrchestrator:
         total_fn = cpu_dispatcher.fn + qpu_dispatcher.fn
 
         all_eqi = qpu_dispatcher.all_eqi + cpu_dispatcher.all_eqi
+        all_max_chains = qpu_dispatcher.all_max_chains + cpu_dispatcher.all_max_chains
+        all_mean_chains = qpu_dispatcher.all_mean_chains + cpu_dispatcher.all_mean_chains
+        all_median_chains = qpu_dispatcher.all_median_chains + cpu_dispatcher.all_median_chains
+        all_physical_nodes = qpu_dispatcher.all_physical_nodes + cpu_dispatcher.all_physical_nodes
+        all_expansions = qpu_dispatcher.all_expansions + cpu_dispatcher.all_expansions
+        all_long_chain_fractions = qpu_dispatcher.all_long_chain_fractions + cpu_dispatcher.all_long_chain_fractions
+
+        all_estimated_qpu = qpu_dispatcher.estimated_runtime_total
 
         if all_eqi:
             eqi_stats = {
@@ -624,6 +741,12 @@ class EmbeddingAwareOrchestrator:
                 "eqi_min": float(np.min(all_eqi)),
                 "eqi_max": float(np.max(all_eqi)),
                 "eqi_median": float(np.median(all_eqi)),
+                "max_chain": float(np.mean(all_max_chains)) if all_max_chains else 0.0,
+                "mean_chain": float(np.mean(all_mean_chains)) if all_mean_chains else 0.0,
+                "median_chain": float(np.mean(all_median_chains)) if all_median_chains else 0.0,
+                "physical_nodes": float(np.mean(all_physical_nodes)) if all_physical_nodes else 0.0,
+                "expansion": float(np.mean(all_expansions)) if all_expansions else 0.0,
+                "long_chain_fraction": float(np.mean(all_long_chain_fractions)) if all_long_chain_fractions else 0.0,
             }
         else:
             eqi_stats = {
@@ -632,11 +755,18 @@ class EmbeddingAwareOrchestrator:
                 "eqi_min": 0.0,
                 "eqi_max": 0.0,
                 "eqi_median": 0.0,
+                "max_chain": 0.0,
+                "mean_chain": 0.0,
+                "median_chain": 0.0,
+                "physical_nodes": 0.0,
+                "expansion": 0.0,
+                "long_chain_fraction": 0.0,
             }
 
         results = {
             # 1. Area Routing & Policy
             "instance_id": lp_filename,
+            "seed": seed,
             "is_maximization_objective": is_maximize,
             "policy": self.policy_mode,
             "qpu_calls": router.qpu_calls,
@@ -664,10 +794,11 @@ class EmbeddingAwareOrchestrator:
             "time_routing_total": router.total_routing_time,
             "decomposed": True,
 
-            #"prefactor": meta.get("chain_strength_prefactor", None),  ##############################
-
+            "chain_strength_prefactor": chain_strength_prefactor if chain_strength_prefactor is not None else 1.414,
+            
+            **eqi_stats,
             **cqmResults,
-            **eqi_stats
+            "estimated_leap_qpu_time_us": all_estimated_qpu,
         }
         
         if verbose:

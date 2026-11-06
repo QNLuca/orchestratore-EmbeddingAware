@@ -44,16 +44,6 @@ benchmark_status = {
     "total": 0
 }
 
-def background_benchmark_task():
-    global benchmark_status
-    benchmark_status["running"] = True
-    try:
-        execute_files_benchmark(orchestratorEA=orchestrator, status_dict=benchmark_status)
-    except Exception as e:
-        print(f"Errore durante l'esecuzione del benchmark: {e}")
-    finally:
-        benchmark_status["running"] = False
-
 ### MODELLI DI RICHIESTA E RISPOSTA ###
 class LPUrlRequest(BaseModel):
     model_config = ConfigDict(use_attribute_docstrings=True)
@@ -135,6 +125,9 @@ def run_pipeline(job_id: str, req: LPUrlRequest):
         redis_client.setex(f"job:{job_id}", 86400, json.dumps(final_payload, default=str))
 
     except Exception as e:
+        tb_str = traceback.format_exc()
+        logging.error(f"[JOB FAILED {job_id}] Errore pipeline EA:\n{tb_str}")
+
         error_payload = {
             "status": "FAILED",
             "error": str(e)
@@ -206,6 +199,19 @@ def run_benchmark_pipeline(job_id: str, req: LPUrlRequest):
             "error": str(e)
         }
         redis_client.setex(f"job:{job_id}", 86400, json.dumps(error_payload, default=str))
+
+def background_benchmark_task():
+    global benchmark_status
+    benchmark_status["running"] = True
+    try:
+        execute_files_benchmark(orchestratorEA=orchestrator, status_dict=benchmark_status)
+    except Exception as e:
+        #stampa il traceback nei log di sistema
+        tb_str = traceback.format_exc()
+        logging.error(f"[JOB FAILED] Errore benchmark file locali:\n{tb_str}")
+        
+    finally:
+        benchmark_status["running"] = False
 
 ### ENDPOINT API ###
 

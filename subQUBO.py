@@ -64,7 +64,7 @@ class SubQUBO:
         return total_degree / num_vars
 
     @staticmethod
-    def compute_embedding(bqm, target_graph) -> tuple[dict, float]:
+    def compute_embedding(bqm, target_graph, seed) -> tuple[dict, float]:
         """
         Calcola l'embedding per un sub-BQM e ne misura il tempo esatto di calcolo.
         Ritorna una tupla: (embedding,is_all_embeddable, sub_embedding_time)
@@ -76,12 +76,12 @@ class SubQUBO:
 
         t_embed_0 = time.perf_counter()
 
-        if num_vars < 184:  #clique completa maggiore su grafo Zephyr(12)
+        if num_vars < 88:  #clique completa maggiore su grafo Zephyr(6)
             try:
                 raw_embedding = find_clique_embedding(
                     k=num_vars,
                     target_graph=target_graph,
-                    seed=random.randint(1, 10)
+                    seed=seed
                 )
 
                 var_list = list(bqm.variables)
@@ -100,7 +100,7 @@ class SubQUBO:
                         S=edges,
                         T=target_graph,
                         timeout=60,
-                        random_seed=random.randint(1, 10),
+                        random_seed=seed,
                         threads=8,
                         verbose=0
                     )
@@ -112,7 +112,7 @@ class SubQUBO:
                     S=edges,
                     T=target_graph,
                     timeout=60,
-                    random_seed=random.randint(1, 10),
+                    random_seed=seed,
                     threads=8,
                     verbose=0
                 )
@@ -140,6 +140,7 @@ class SubQUBO:
         """
         chain_lengths = [len(c) for c in embedding.values()]
 
+        #controllo di sicurezza
         if not embedding or len(embedding) == 0 or len(chain_lengths) == 0:
             return {
                 "has_embedding": False,
@@ -211,7 +212,7 @@ class SubQUBO:
 
         return {
             "has_embedding": True,
-            "eqi": eqi,
+            "eqi_mean": eqi,
             "max_chain": max_chain,
             "mean_chain": mean_chain,
             "median_chain": median_chain,

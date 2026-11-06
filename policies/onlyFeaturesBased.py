@@ -1,24 +1,34 @@
+import os
 import time
 from typing import Any, Dict
 import dimod
 import hybrid
 import numpy as np
 
-from cqmUtilities import CqmUtilities
+from utils.cqmUtilities import CqmUtilities
 from subQUBO import SubQUBO
 from policies.basePolicy import BasePolicy
+from policies.baseRouter import BaseRouter
 
 from dwave.embedding import embed_bqm, unembed_sampleset, chain_break_frequency
 from dwave.embedding.chain_breaks import majority_vote
 from dwave.embedding.chain_strength import uniform_torque_compensation
 
-from policies.baseRouter import BaseRouter
+from dwave.system import DWaveSampler, FixedEmbeddingComposite
+from dotenv import load_dotenv
+
+#carica le variabili contenute nel file .env
+load_dotenv()
+
+DWAVE_API_KEY = os.getenv("DWAVE_API_TOKEN")
 
 class OnlyFeaturesRouter(BaseRouter):
     """Invia a QPU ogni sub-problema per cui si riesce a calcolare un embedding valido."""
-    def __init__(self, qpu_sampler, cpu_sampler, target_graph=None, chain_strength_prefactor=None, **kwargs):
+    def __init__(self, qpu_sampler, cpu_sampler, qpu_identity = None, target_graph=None, chain_strength_prefactor=None, seed=None, **kwargs):
         super().__init__(qpu_sampler=qpu_sampler, cpu_sampler=cpu_sampler, chain_strength_prefactor=chain_strength_prefactor, **kwargs)
         self.target_graph = target_graph
+        self.seed = seed
+        self.qpu_identity = qpu_identity
 
         self.chain_break_fractions = []
         self.tp = 0  # True Positive
@@ -27,6 +37,12 @@ class OnlyFeaturesRouter(BaseRouter):
         self.fn = 0  # False Negative
 
         self.all_eqi = []
+        self.all_max_chains = []
+        self.all_mean_chains = []
+        self.all_median_chains = []
+        self.all_long_chain_fractions = []
+        self.all_expansions = []
+        self.all_physical_nodes = []
 
 
     def next(self, state, **kwargs):
@@ -39,11 +55,11 @@ class OnlyFeaturesRouter(BaseRouter):
         is_qpu_ready = not ((sub_qubo_avg_degree > 52 and sub_qubo_num_vars > 192 and sub_qubo_density > 0.052) 
                                                   or (sub_qubo_num_vars > 250 and sub_qubo_density >= 0.052))
 
-        embedding, is_embeddable, _ = sub_qubo.compute_embedding(sub_bqm, self.target_graph)
+        embedding, is_embeddable, _ = sub_qubo.compute_embedding(sub_bqm, self.target_graph, self.seed)
 
         route_to_qpu = is_embeddable and is_qpu_ready
 
-        res_state = self._execute_route(state, route_to_qpu=route_to_qpu, embedding=embedding)
+        res_state = self._execute_route(state, route_to_qpu=route_to_qpu, embedding=embedding, qpu_identity=self.qpu_identity)
 
         proxy_metrics = res_state.info.get("proxy_metrics", {})
 
@@ -54,6 +70,12 @@ class OnlyFeaturesRouter(BaseRouter):
                 self.chain_break_fractions.append(proxy_metrics["chain_break_fraction"])
             if "eqi" in proxy_metrics:
                 self.all_eqi.append(proxy_metrics["eqi"])
+                self.all_max_chains.append(proxy_metrics["max_chain"])
+                self.all_mean_chains.append(proxy_metrics["mean_chain"])
+                self.all_median_chains.append(proxy_metrics["median_chain"])
+                self.all_long_chain_fractions.append(proxy_metrics["long_chain_fraction"])
+                self.all_expansions.append(proxy_metrics["expansion"]) # == mean_chain
+                self.all_physical_nodes.append(proxy_metrics["physical_nodes"])
 
             if good_embedding and from_qpu:
                 self.tp += 1
@@ -70,7 +92,7 @@ class OnlyFeaturesBasedPolicy(BasePolicy):
     def __init__(self, **kwargs):
         super().__init__(name="only_features_based", **kwargs)
 
-    def solve(self, meta, bqm, global_embedding, is_all_embeddable, target_graph=None) -> Dict[str, Any]:
+    def solve(self, meta, bqm, global_embedding, is_all_embeddable, seed, qpu_identity, target_graph=None) -> Dict[str, Any]:
         lp_filename = meta.get("lp_filename", None)
 
         bestknown_solution = float(meta.get("bestknown_solution",None))
@@ -108,30 +130,89 @@ class OnlyFeaturesBasedPolicy(BasePolicy):
                     bqm, embedding=global_embedding, prefactor=1.414 #aggiusta stima prefactor
                 )
                                     
-            target_bqm = embed_bqm(
-                bqm, 
-                embedding=global_embedding, 
-                target_adjacency=target_graph,
-                chain_strength=chain_strength
-            )
-            
-            init_state = hybrid.State.from_problem(target_bqm)
+            if DWAVE_API_KEY:
+                            
+                qpu_sampler = DWaveSampler(solver=dict(identity=qpu_identity))
+                
+                fixed_composite = FixedEmbeddingComposite(qpu_sampler, embedding=global_embedding)
+
+                t_start = time.perf_counter()
+
+                res_sampleset = fixed_composite.sample(
+                    bqm,
+                    chain_strength=chain_strength,
+                    num_reads=40,
+                    annealing_time =20
+                )
+
+                t_end = time.perf_counter()
+
+                wall_service_time = t_end - t_start
+
+                final_time = t_end - start_time
+
+                timing_info = res_sampleset.info.get('timing', {})
+
+                chain_break_fraction = res_sampleset.record.chain_break_fraction #media fra tutte le letture
+                
+                #Raccolti tutti metadati temporali
+                qpu_full_timing = {
+                    "qpu_sampling_time": timing_info.get('qpu_sampling_time'),
+                    "qpu_anneal_time_per_sample": timing_info.get('qpu_anneal_time_per_sample'),
+                    "qpu_readout_time_per_sample": timing_info.get('qpu_readout_time_per_sample'),
+                    "qpu_access_time": timing_info.get('qpu_access_time'),
+                    "qpu_access_overhead_time": timing_info.get('qpu_access_overhead_time'),
+                    "qpu_programming_time": timing_info.get('qpu_programming_time'),
+                    "qpu_delay_time_per_sample": timing_info.get('qpu_delay_time_per_sample'),
+                    "total_post_processing_time": timing_info.get('total_post_processing_time'),
+                    "post_processing_overhead_time": timing_info.get('post_processing_overhead_time'),
+                    "service_time": wall_service_time
+                }                
+
+                extra_metrics = {
+                     **qpu_full_timing,
+                }        
                         
-            end_state = qpu_target_global.run(init_state).result()
-            
-            physical_sampleset = end_state.samples
+            else:               
+                t_build_0 = time.perf_counter()         
+                target_bqm = embed_bqm(
+                    bqm, 
+                    embedding=global_embedding, 
+                    target_adjacency=target_graph,
+                    chain_strength=chain_strength
+                )
+                t_build = time.perf_counter() - t_build_0
 
-            break_freq_dict = chain_break_frequency(physical_sampleset, global_embedding) # Returns: dict: Frequency of chain breaks as a dict in the form {s: f, ...},  where s is a variable in the source graph, and frequency, a float, is the fraction of broken chains.
+                t_start_solve = time.perf_counter()
+                init_state = hybrid.State.from_problem(target_bqm)
 
-            sampleset = unembed_sampleset(physical_sampleset, global_embedding, bqm, chain_break_method=majority_vote)
-            
-            final_time = (time.perf_counter() - start_time)
+                end_state = qpu_target_global.run(init_state).result()
+
+                physical_sampleset = end_state.samples
+                t_solve_total = time.perf_counter() - t_start_solve
+
+                t_unembed_0 = time.perf_counter()
+                res_sampleset = unembed_sampleset(physical_sampleset, global_embedding, bqm, chain_break_method=majority_vote)
+                t_unembed = time.perf_counter() - t_unembed_0
+
+                final_time = time.perf_counter() - start_time
+
+                chain_break_fraction = list(chain_break_frequency(physical_sampleset, global_embedding).values()) # Returns: dict: Frequency of chain breaks as a dict in the form {s: f, ...},  where s is a variable in the source graph, and frequency, a float, is the fraction of broken chains.
+
+                extra_metrics = {
+                    "physical_build_time": t_build,
+                    "unembed_time": t_unembed,
+                    "t_solve": t_solve_total
+                }
+
 
             total_wall_clock = final_time + self.embedding_time
 
-            best_energy = float(sampleset.first.energy)
+            avg_chain_break = float(np.mean(chain_break_fraction)) if len(chain_break_fraction) > 0 else 0.0
 
-            best_sample = dict(sampleset.first.sample)
+            best_energy = float(res_sampleset.first.energy)
+
+            best_sample = dict(res_sampleset.first.sample)
 
             if is_maximize:
                 best_energy = -best_energy
@@ -139,12 +220,17 @@ class OnlyFeaturesBasedPolicy(BasePolicy):
             rel_gap = abs(best_energy - bestknown_solution) / abs(bestknown_solution) if bestknown_solution else None
             abs_gap = abs(best_energy - bestknown_solution) if bestknown_solution is not None else None
 
-            chain_break_fraction = 0.0         
-            if break_freq_dict:
-                #calcola la media dei valori nel dizionario
-                chain_break_fraction = sum(break_freq_dict.values()) / len(break_freq_dict)
+            emb_metrics = SubQUBO.compute_advanced_embedding_metrics(global_embedding,bqm,avg_chain_break)
 
-            good_embedding = SubQUBO.compute_advanced_embedding_metrics(global_embedding,bqm,chain_break_fraction)
+            good_embedding = bool(emb_metrics["good_embedding"])
+
+            eqi = emb_metrics["eqi"]
+            max_chain = float(emb_metrics["max_chain"])
+            median_chain = float(emb_metrics["median_chain"])
+            mean_chain = float(emb_metrics["mean_chain"])
+            long_chain_fraction = float(emb_metrics["long_chain_fraction"])
+            physical_nodes = float(emb_metrics["physical_nodes"])
+            expansion = float(emb_metrics["expansion"])
 
             cqmResults = {}
                     
@@ -153,6 +239,7 @@ class OnlyFeaturesBasedPolicy(BasePolicy):
 
             return {
                 "instance_id": lp_filename,
+                "seed": seed,
                 "is_maximization_objective": is_maximize,
                 "policy": self.name,
                 "best_energy": best_energy,
@@ -166,10 +253,21 @@ class OnlyFeaturesBasedPolicy(BasePolicy):
                 "tp": 1 if good_embedding else 0, 
                 "fp": 1 if not good_embedding else 0, "tn": 0, "fn": 0,
 
-                "chain_break_fraction": chain_break_fraction,
+                "chain_break_fraction": avg_chain_break,
 
                 "decomposed": False,
-                
+
+                "chain_strength_prefactor": chain_strength_prefactor if chain_strength_prefactor is not None else 1.414,
+                                
+                "eqi_mean": eqi,
+                "max_chain": max_chain,
+                "mean_chain": mean_chain,
+                "median_chain": median_chain,
+                "physical_nodes": physical_nodes,
+                "expansion": expansion,
+                "long_chain_fraction": long_chain_fraction,
+
+                **extra_metrics,
                 **cqmResults
             }
 
@@ -181,7 +279,9 @@ class OnlyFeaturesBasedPolicy(BasePolicy):
             qpu_sampler=qpu_target,
             cpu_sampler=cpu_fallback,
             target_graph=target_graph,
-            chain_strength_prefactor = chain_strength_prefactor
+            chain_strength_prefactor = chain_strength_prefactor,
+            seed=seed,
+            qpu_identity=qpu_identity
         )
 
         decomposer = hybrid.Unwind(
@@ -234,6 +334,12 @@ class OnlyFeaturesBasedPolicy(BasePolicy):
         total_calls = router.qpu_calls + router.cpu_calls
 
         all_eqi = router.all_eqi
+        all_max_chains = router.all_max_chains
+        all_mean_chains = router.all_mean_chains
+        all_median_chains = router.all_median_chains
+        all_physical_nodes = router.all_physical_nodes
+        all_expansions = router.all_expansions
+        all_long_chain_fractions = router.all_long_chain_fractions
 
         if all_eqi:
             eqi_stats = {
@@ -242,6 +348,12 @@ class OnlyFeaturesBasedPolicy(BasePolicy):
                 "eqi_min": float(np.min(all_eqi)),
                 "eqi_max": float(np.max(all_eqi)),
                 "eqi_median": float(np.median(all_eqi)),
+                "max_chain": float(np.mean(all_max_chains)) if all_max_chains else 0.0,
+                "mean_chain": float(np.mean(all_mean_chains)) if all_mean_chains else 0.0,
+                "median_chain": float(np.mean(all_median_chains)) if all_median_chains else 0.0,
+                "physical_nodes": float(np.mean(all_physical_nodes)) if all_physical_nodes else 0.0,
+                "expansion": float(np.mean(all_expansions)) if all_expansions else 0.0,
+                "long_chain_fraction": float(np.mean(all_long_chain_fractions)) if all_long_chain_fractions else 0.0,
             }
         else:
             eqi_stats = {
@@ -250,12 +362,19 @@ class OnlyFeaturesBasedPolicy(BasePolicy):
                 "eqi_min": 0.0,
                 "eqi_max": 0.0,
                 "eqi_median": 0.0,
+                "max_chain": 0.0,
+                "mean_chain": 0.0,
+                "median_chain": 0.0,
+                "physical_nodes": 0.0,
+                "expansion": 0.0,
+                "long_chain_fraction": 0.0,
             }
 
         avg_chain_break = float(np.mean(router.chain_break_fractions)) if router.chain_break_fractions else 0.0
 
         return {
             "instance_id": lp_filename,
+            "seed": seed,
             "is_maximization_objective": is_maximize,
             "policy": self.name,
             "best_energy": best_energy,
@@ -267,9 +386,12 @@ class OnlyFeaturesBasedPolicy(BasePolicy):
             "cpu_calls": router.cpu_calls,
             "qpu_utilization_ratio": router.qpu_calls/total_calls if total_calls > 0 else 0.0,
             "tp": router.tp, "fp": router.fp, "tn": router.tn, "fn": router.fn,
+            "decomposed": True,
+            
+            "chain_strength_prefactor": chain_strength_prefactor if chain_strength_prefactor is not None else 1.414,
 
             "chain_break_fraction": avg_chain_break,
 
-            **cqmResults,
-            **eqi_stats
+           **eqi_stats,
+           **cqmResults            
             }

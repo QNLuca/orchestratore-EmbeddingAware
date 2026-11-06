@@ -3,7 +3,7 @@ from typing import Any, Dict
 import dimod
 import hybrid
 
-from cqmUtilities import CqmUtilities
+from utils.cqmUtilities import CqmUtilities
 from policies.basePolicy import BasePolicy
 from policies.baseRouter import BaseRouter
 
@@ -14,7 +14,7 @@ class AlwaysCPURouter(BaseRouter):
     
     def next(self, state, **kwargs):
 
-        res_state = self._execute_route(state, route_to_qpu=False)
+        res_state = self._execute_route(state, route_to_qpu=False, qpu_identity=None)
 
         return state.updated(subsamples=res_state)
 
@@ -23,7 +23,7 @@ class AlwaysCPUPolicy(BasePolicy):
     def __init__(self, **kwargs):
         super().__init__(name="always_cpu", **kwargs)
 
-    def solve(self, meta, bqm, global_embedding, is_all_embeddable, target_graph=None) -> Dict[str, Any]:
+    def solve(self, meta, bqm, global_embedding, is_all_embeddable, seed, qpu_identity=None, target_graph=None) -> Dict[str, Any]:
         lp_filename = meta.get("lp_filename", None)
         bestknown_solution = float(meta.get("bestknown_solution",None))
 
@@ -83,6 +83,7 @@ class AlwaysCPUPolicy(BasePolicy):
 
         return {
             "instance_id": lp_filename,
+            "seed": seed,
             "is_maximization_objective": is_maximize,
             "policy": self.name,
             "best_energy": best_energy,
@@ -93,6 +94,7 @@ class AlwaysCPUPolicy(BasePolicy):
             "qpu_calls": 0,
             "cpu_calls": router.cpu_calls,
             "qpu_utilization_ratio": 0.0,
+            "decomposed": True,
             
             **cqmResults
         }

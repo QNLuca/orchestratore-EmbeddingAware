@@ -1,10 +1,20 @@
+import os
+
 import hybrid
 import dimod
 import time
 from typing import Dict, Any
 
-from cqmUtilities import CqmUtilities
+from utils.cqmUtilities import CqmUtilities
 from policies.basePolicy import BasePolicy
+
+from dwave.system import DWaveSampler, FixedEmbeddingComposite
+from dotenv import load_dotenv
+
+#carica le variabili contenute nel file .env
+load_dotenv()
+
+DWAVE_API_KEY = os.getenv("DWAVE_API_TOKEN")
 
 class RaceCounter(hybrid.Runnable):
     """
@@ -26,7 +36,7 @@ class QBSolvPolicy(BasePolicy):
         super().__init__(name="qbsolv", **kwargs)
 
     def solve(self, meta, bqm, global_embedding,
-                is_all_embeddable,target_graph=None) -> Dict[str, Any]:
+                is_all_embeddable,seed, qpu_identity, target_graph=None) -> Dict[str, Any]:
         lp_filename = meta.get("lp_filename", None)
         bestknown_solution = float(meta.get("bestknown_solution",None))
 
@@ -35,26 +45,40 @@ class QBSolvPolicy(BasePolicy):
         cqm = meta.get("cqm",None)
 
         is_maximize = meta.get("is_maximize", False)
-        
-        start_time = time.perf_counter()
 
         calls = {
-                    "cpu_calls": 0,
-                    "qpu_calls": 0
-                }
+            "cpu_calls": 0,
+            "qpu_calls": 0
+        }
+
+        if DWAVE_API_KEY:
+            if qpu_identity:
+                qpu_sampler = DWaveSampler(solver=dict(identity=qpu_identity))
+            else:
+                qpu_sampler = DWaveSampler(solver={'topology__type': 'zephyr'})
+
+            qpu_branch = hybrid.QPUSubproblemAutoEmbeddingSampler(
+                            qpu_sampler=qpu_sampler,
+                            num_reads=40,
+                            sampling_params={'annealing_time': 20}
+                            )
+        else:
+            qpu_branch = hybrid.SimulatedAnnealingSubproblemSampler()
+        
 
         iteration = hybrid.Race(
             RaceCounter(calls, "cpu_calls")
             | hybrid.InterruptableTabuSampler(),
             hybrid.EnergyImpactDecomposer(size=min(self.subproblem_size, len(bqm.variables)), rolling=True, rolling_history=0.15)
             | hybrid.Const(subsamples=None) #reset subsamples
-            #| hybrid.QPUSubproblemAutoEmbeddingSampler() #API key
             | RaceCounter(calls, "qpu_calls")
-            | hybrid.SimulatedAnnealingSubproblemSampler()
+            | qpu_branch
             | hybrid.SplatComposer()
         ) | hybrid.ArgMin() | hybrid.TrackMin(output=True)
 
         main = hybrid.Loop(iteration, max_iter=self.max_iter, convergence=self.convergence)
+        
+        start_time = time.perf_counter()
         init_sample = dimod.SimulatedAnnealingSampler().sample(bqm, num_reads=1).first.sample
         init_state = hybrid.State.from_sample(init_sample, bqm)
         final_state = main.run(init_state).result()
@@ -82,6 +106,7 @@ class QBSolvPolicy(BasePolicy):
         
         return {
             "instance_id": lp_filename,
+            "seed": seed,
             "is_maximization_objective": is_maximize,
             "policy": self.name,
             "best_energy": best_energy,

@@ -73,7 +73,7 @@ class LoadLp:
             "is_maximize": is_maximize,
         }
 
-        return bqm, meta #invert, meta, cqm
+        return bqm, meta
 
 
     @staticmethod

@@ -1,10 +1,19 @@
+import os
 import time
 from typing import Any, Dict
 import dimod
 import hybrid
 
-from cqmUtilities import CqmUtilities
+from utils.cqmUtilities import CqmUtilities
 from policies.basePolicy import BasePolicy
+
+from dwave.system import DWaveSampler, FixedEmbeddingComposite
+from dotenv import load_dotenv
+
+#carica le variabili contenute nel file .env
+load_dotenv()
+
+DWAVE_API_KEY = os.getenv("DWAVE_API_TOKEN")
 
 #class TrackingArgMin(hybrid.ArgMin):
 #    """
@@ -76,8 +85,8 @@ class KerberosPolicy(BasePolicy):
     def __init__(self, **kwargs):
         super().__init__(name="kerberos", **kwargs)
 
-    def solve(self, meta, bqm, global_embedding,
-                is_all_embeddable,target_graph=None) -> Dict[str, Any]:
+    def solve(self, meta, bqm, seed, global_embedding,
+                is_all_embeddable, qpu_identity, target_graph=None) -> Dict[str, Any]:
         lp_filename = meta.get("lp_filename", None)
         bestknown_solution = float(meta.get("bestknown_solution",None))
 
@@ -86,31 +95,36 @@ class KerberosPolicy(BasePolicy):
         cqm = meta.get("cqm",None)
 
         is_maximize = meta.get("is_maximize", False)
-        
-        start_time = time.perf_counter()
 
-        #API key necessaria
-        #kerberos = hybrid.Kerberos(max_iter=self.max_iter,convergence=self.convergence, sa_reads=20,sa_sweeps=1000,tabu_timeout=200,max_subproblem_size=self.subproblem_size)
-
-        # Dizionario per tracciare le invocazioni esatte di ciascun ramo
+        #dizionario per tracciare le invocazioni esatte di ciascun ramo
         calls = {
             "cpu_tabu_calls": 0,
             "cpu_sa_calls": 0,
             "qpu_calls": 0
         }
 
-        qpu_branch = (
-            hybrid.EnergyImpactDecomposer(
-                size=min(self.subproblem_size, len(bqm.variables)),
-                rolling=True,
-                rolling_history=0.3,
-                traversal='bfs'
-            )
-            | hybrid.Const(subsamples=None) #reset subsamples
-            | RaceCounter(calls, "qpu_calls")
-            | hybrid.SimulatedAnnealingSubproblemSampler(num_reads=10, num_sweeps=500)
-            | hybrid.SplatComposer()
-        )
+        if DWAVE_API_KEY:
+            if qpu_identity:
+                qpu_sampler = DWaveSampler(solver=dict(identity=qpu_identity))
+            else:
+                qpu_sampler = DWaveSampler(solver={'topology__type': 'zephyr'})
+
+            qpu_branch = hybrid.Kerberos(max_iter=self.max_iter,convergence=self.convergence, 
+                                                  qpu_reads = 40, qpu_params={'annealing_time': 20}, sa_reads=20,sa_sweeps=1000,tabu_timeout=200,
+                                                   max_subproblem_size=self.subproblem_size, qpu_sampler=qpu_sampler)
+        else:
+            qpu_branch = (
+                        hybrid.EnergyImpactDecomposer(
+                            size=min(self.subproblem_size, len(bqm.variables)),
+                            rolling=True,
+                            rolling_history=0.3,
+                            traversal='bfs'
+                        )
+                        | hybrid.Const(subsamples=None) #reset subsamples
+                        | RaceCounter(calls, "qpu_calls")
+                        | hybrid.SimulatedAnnealingSubproblemSampler(num_reads=10, num_sweeps=500)
+                        | hybrid.SplatComposer()
+                    )
 
         # Rami CPU
         tabu_branch = (  
@@ -123,7 +137,7 @@ class KerberosPolicy(BasePolicy):
             | hybrid.SimulatedAnnealingProblemSampler(num_reads=1, num_sweeps=10000)
         )
 
-        kerberos_offline = hybrid.Loop(
+        iteration = hybrid.Loop(
             hybrid.Race(
                 hybrid.BlockingIdentity(),
                 tabu_branch,
@@ -133,10 +147,11 @@ class KerberosPolicy(BasePolicy):
             max_iter=self.max_iter,
             convergence=self.convergence
         )
-    
+
+        start_time = time.perf_counter()
         init_sample = dimod.SimulatedAnnealingSampler().sample(bqm, num_reads=1).first.sample
         init_state = hybrid.State.from_sample(init_sample, bqm)
-        final_state = kerberos_offline.run(init_state).result()
+        final_state = iteration.run(init_state).result()
 
         total_wall_clock = time.perf_counter() - start_time
 
@@ -161,6 +176,7 @@ class KerberosPolicy(BasePolicy):
 
         return {
             "instance_id": lp_filename,
+            "seed": seed,
             "is_maximization_objective": is_maximize,
             "policy": self.name,
             "best_energy": best_energy,
