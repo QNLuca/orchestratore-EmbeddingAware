@@ -40,7 +40,7 @@ Il sistema coordina tramite dinamiche di routing risorse classiche (CPU/Tabu/SA)
 ├── orchestrator.py         # Orchestratore centrale della pipeline con policy embedding-aware
 ├── benchmark.py            # Runner per la suite benchmark comparativa
 ├── api.py                  # Semplice FastAPI Web Server
-├── compose.yml      # Orchestrazione dei container
+├── compose.yaml      # Orchestrazione dei container
 └── .env.example            # Template delle variabili d'ambiente
 
 ```
@@ -74,7 +74,7 @@ REDIS_HOST=redis
 REDIS_PORT=6379
 
 #D-Wave QPU
-DWAVE_API_TOKEN= your_api_key
+DWAVE_API_TOKEN=your_api_key
 
 ```
 
@@ -94,6 +94,7 @@ La documentazione OpenAPI interattiva sarà consultabile su: `http://localhost:8
 ### 1. Risoluzione Asincrona di un problema LP (`POST /solve-lp`)
 
 Avvia la risoluzione del problema specificato tramite l'URL del file `.lp`.
+I valori di `lagrange_multiplier` e `chain_strength_prefactor` se lasciati a `0` sono gestiti automaticamente dal sistema.
 
 ```bash
 curl -X 'POST' \
@@ -101,10 +102,10 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "lp_url": "https://example.com/problems/sample.lp",
-  "lagrange_multiplier": 0, # default a 0 per gestione automatica
+  "lagrange_multiplier": 0,
   "max_iter": 5,
   "convergence": 2,
-  "chain_strength_prefactor": 0, # default a 0 per gestione automatica
+  "chain_strength_prefactor": 0,
   "verbose": false
 }'
 
@@ -126,6 +127,7 @@ curl -X 'POST' \
 ### 2. Benchmark Comparativo (`POST /benchmark-lp`)
 
 Esegue il problema `.lp` su **tutte le policy integrate** per confrontarne le metriche di prestazione.
+I valori di `lagrange_multiplier` e `chain_strength_prefactor` se lasciati a `0` sono gestiti automaticamente dal sistema.
 
 ```bash
 curl -X 'POST' \
@@ -133,10 +135,10 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "lp_url": "https://example.com/problems/sample.lp",
-  "lagrange_multiplier": 0, # default a 0 per gestione automatica
+  "lagrange_multiplier": 0,
   "max_iter": 5,
   "convergence": 2,
-  "chain_strength_prefactor": 0, # default a 0 per gestione automatica
+  "chain_strength_prefactor": 0,
   "verbose": false
 }'
 
