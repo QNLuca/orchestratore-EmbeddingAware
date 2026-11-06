@@ -64,7 +64,7 @@ class SubQUBO:
         return total_degree / num_vars
 
     @staticmethod
-    def compute_embedding(bqm, target_graph, seed) -> tuple[dict, float]:
+    def compute_embedding(bqm, target_graph, seed) -> tuple[dict, bool, float]:
         """
         Calcola l'embedding per un sub-BQM e ne misura il tempo esatto di calcolo.
         Ritorna una tupla: (embedding,is_all_embeddable, sub_embedding_time)
@@ -76,7 +76,7 @@ class SubQUBO:
 
         t_embed_0 = time.perf_counter()
 
-        if num_vars < 88:  #clique completa maggiore su grafo Zephyr(6)
+        if num_vars < 184:  #clique completa maggiore su grafo Zephyr(12)
             try:
                 raw_embedding = find_clique_embedding(
                     k=num_vars,
@@ -212,7 +212,7 @@ class SubQUBO:
 
         return {
             "has_embedding": True,
-            "eqi_mean": eqi,
+            "eqi": eqi,
             "max_chain": max_chain,
             "mean_chain": mean_chain,
             "median_chain": median_chain,

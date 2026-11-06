@@ -9,7 +9,7 @@ import dwave.graphs as dnx
 import pickle
 from utils.mockSolverOffline import OfflineQPUSolver 
 
-from dwave.system import FixedEmbeddingComposite
+from dwave.system import DWaveSampler, FixedEmbeddingComposite
 from dwave.embedding import embed_bqm, unembed_sampleset, chain_break_frequency
 from dwave.embedding.chain_breaks import majority_vote
 from dwave.embedding.chain_strength import uniform_torque_compensation
@@ -30,7 +30,7 @@ r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_responses=False)
 
 def solve_subqubo_rq(sub_bqm: dimod.BinaryQuadraticModel,
                   sampler_type: str, embedding=None, chain_strength_prefactor: float = None, 
-                  realQPU: bool = False, qpu_sampler = None) -> dimod.SampleSet:
+                  realQPU: bool = False, qpu_identity = None) -> dimod.SampleSet:
         """
         Risolve direttamente il sub-QUBO con il sampler indicato.
         """
@@ -52,6 +52,11 @@ def solve_subqubo_rq(sub_bqm: dimod.BinaryQuadraticModel,
             successLeap = False
 
             if realQPU: 
+                if qpu_identity:
+                    qpu_sampler = DWaveSampler(solver=dict(identity=qpu_identity))
+                else: 
+                    DWaveSampler(solver={'topology__type': 'zephyr'})
+
                 fixed_composite = FixedEmbeddingComposite(qpu_sampler, embedding=embedding)
 
                 max_retries = 3
@@ -126,6 +131,10 @@ def solve_subqubo_rq(sub_bqm: dimod.BinaryQuadraticModel,
                 target_graph = dnx.zephyr_graph(12)
                 if realQPU:
                     #sono qui dopo retry e fallimento su QPU reale
+                    if qpu_identity:
+                        qpu_sampler = DWaveSampler(solver=dict(identity=qpu_identity))
+                    else: 
+                        DWaveSampler(solver={'topology__type': 'zephyr'})
                     target_graph = qpu_sampler.to_networkx_graph() #uso almeno topologia reale seppur su SA
 
                 t_build_0 = time.perf_counter()

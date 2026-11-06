@@ -40,7 +40,7 @@ Il sistema coordina tramite dinamiche di routing risorse classiche (CPU/Tabu/SA)
 ├── orchestrator.py         # Orchestratore centrale della pipeline con policy embedding-aware
 ├── benchmark.py            # Runner per la suite benchmark comparativa
 ├── api.py                  # Semplice FastAPI Web Server
-├── docker-compose.yml      # Orchestrazione dei container
+├── compose.yml      # Orchestrazione dei container
 └── .env.example            # Template delle variabili d'ambiente
 
 ```

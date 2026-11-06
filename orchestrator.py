@@ -58,11 +58,12 @@ class AsyncRedisDispatcherSampler(hybrid.Runnable):
         self.meta = meta
 
         #inizializzo una sola volta
-        self.qpu_sampler = None
+        self.qpu_identity = qpu_identity
+
         self.realQPU = False
         if DWAVE_API_KEY:
             self.realQPU = True
-            self.qpu_sampler = DWaveSampler(solver=dict(identity=qpu_identity)) if qpu_identity else DWaveSampler(solver={'topology__type': 'zephyr'})
+            
 
         #Istanza Redis e Coda PERSISTENTI create una sola volta
         self.r_client = redis.Redis(connection_pool=self.pool_ref, decode_responses=False)
@@ -107,7 +108,7 @@ class AsyncRedisDispatcherSampler(hybrid.Runnable):
         #sottomissione del task alla funzione eseguita dal worker RQ
         job = self.q.enqueue(
             'worker.solve_subqubo_rq', 
-            args=(sub_bqm, self.target_queue, embedding, chain_strength_prefactor, self.realQPU, self.qpu_sampler),
+            args=(sub_bqm, self.target_queue, embedding, chain_strength_prefactor, self.realQPU, self.qpu_identity),
             timeout=self.timeout,
             result_ttl=300,  #mantengo il risultato per 300 secondi prima del cleanup
             job_id=job_id

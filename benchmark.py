@@ -241,7 +241,7 @@ def execute_files_benchmark(orchestratorEA: EmbeddingAwareOrchestrator, status_d
         },
         "minorminer_seed": seed,
         "qplib_instances": [str(f.name) for f in lp_files],
-        "hardware_backend": f"DWaveSampler: {qpu_identity}" if os.getenv("DWAVE_API_KEY") else "None: Simulated Annealing"
+        "hardware_backend": f"DWaveSampler: {qpu_identity}" if os.getenv("DWAVE_API_TOKEN") else "None: Simulated Annealing"
     }
 
     #file json per preservare metadati test
@@ -267,7 +267,7 @@ def execute_files_benchmark(orchestratorEA: EmbeddingAwareOrchestrator, status_d
 
         single_runs = run_comparative_suite(
             bqm=bqm, orchestratorEA=orchestratorEA, meta=meta, max_iter=max_iter, 
-            convergence=convergence, qpu_identity=qpu_identity, target_graph=target_graph, seed=random.randint(0,10) ####################sistema
+            convergence=convergence, qpu_identity=qpu_identity, target_graph=target_graph, seed=seed
         )
 
         t1 = time.perf_counter()
