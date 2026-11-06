@@ -110,7 +110,6 @@ def solve_subqubo_rq(sub_bqm: dimod.BinaryQuadraticModel,
                         "qpu_delay_time_per_sample": timing_info.get('qpu_delay_time_per_sample'),
                         "total_post_processing_time": timing_info.get('total_post_processing_time'),
                         "post_processing_overhead_time": timing_info.get('post_processing_overhead_time'),
-                        "service_time": wall_service_time,
                     }
 
                     chain_break_fraction = res_sampleset.record.chain_break_fraction
@@ -121,6 +120,7 @@ def solve_subqubo_rq(sub_bqm: dimod.BinaryQuadraticModel,
                         "from_qpu": True,
                         "real_qpu": True,
                         "qpu_leap_failure": False,
+                        "solve_time": wall_service_time,
                         "chain_break_fraction": avg_chain_break_fraction,
                         **qpu_full_timing,
                         **emb_metrics
@@ -152,7 +152,7 @@ def solve_subqubo_rq(sub_bqm: dimod.BinaryQuadraticModel,
                 init_state = hybrid.State.from_problem(target_bqm)
 
                 #istanzio ed eseguo il sampler da dwave-hybrid
-                sa_workflow = hybrid.SimulatedAnnealingProblemSampler(num_reads=20, num_sweeps=1000)
+                sa_workflow = hybrid.SimulatedAnnealingProblemSampler(num_reads=40, num_sweeps=1000)
                 end_state = sa_workflow.run(init_state).result()
 
                 #estraggo il physical_sampleset risultante

@@ -121,7 +121,7 @@ class AsyncRedisDispatcherSampler(hybrid.Runnable):
             start_time = time.time()
 
             start_sub = time.time()
-            while time.time() - start_sub < 3.0:
+            while time.time() - start_sub < 5.0:
                 msg = pubsub.get_message(ignore_subscribe_messages=False, timeout=0.2)
                 if msg and msg['type'] == 'subscribe':
                     break
@@ -556,7 +556,7 @@ class EmbeddingAwareOrchestrator:
                 init_state = hybrid.State.from_problem(target_bqm)
 
                 #istanzia ed esegui il sampler
-                sa_workflow = hybrid.SimulatedAnnealingProblemSampler(num_reads=50, num_sweeps=1000)
+                sa_workflow = hybrid.SimulatedAnnealingProblemSampler(num_reads=40, num_sweeps=1000)
                 end_state = sa_workflow.run(init_state).result()
 
                 physical_sampleset = end_state.samples
