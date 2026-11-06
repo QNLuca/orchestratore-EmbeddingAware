@@ -16,7 +16,7 @@ Il sistema coordina tramite dinamiche di routing risorse classiche (CPU/Tabu/SA)
 ## TODO
 
 - [x] Aggiungere metodi interazione QPU reale
-- [] Commentare e ripulire codice
+- [ ] Commentare e ripulire codice
 - [x] Aggiungere ulteriori metriche per sperimentazione
 
 ---
