@@ -15,8 +15,8 @@ Il sistema coordina tramite dinamiche di routing risorse classiche (CPU/Tabu/SA)
 
 ## TODO
 
-- [ ] Aggiungere metodi interazione QPU reale
-- [x] Commentare e ripulire codice
+- [x] Aggiungere metodi interazione QPU reale
+- [] Commentare e ripulire codice
 - [x] Aggiungere ulteriori metriche per sperimentazione
 
 ---
@@ -35,7 +35,8 @@ Il sistema coordina tramite dinamiche di routing risorse classiche (CPU/Tabu/SA)
 │   ├── mqt.py              # Policy con predizione ML (dal lavoro di Volpe D. et al, 2024)
 │   └── ...                 # Altre policy classiche/ibride
 ├── modelsRF/               # Modelli Random Forest (.pkl) per policy MQT-QAO
-├── test/                   # file .lp e risultati sperimentali
+├── test/                   # File .lp e risultati sperimentali
+├── utils/                  # Utilità per gestione CQM e test
 ├── orchestrator.py         # Orchestratore centrale della pipeline con policy embedding-aware
 ├── benchmark.py            # Runner per la suite benchmark comparativa
 ├── api.py                  # Semplice FastAPI Web Server
