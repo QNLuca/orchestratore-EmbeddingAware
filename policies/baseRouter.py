@@ -223,7 +223,10 @@ class BaseRouter(hybrid.Runnable):
         else:
             self.cpu_calls += 1
             clean_state = state.updated(subsamples=None)
+            
+            t_solve_0 = time.perf_counter()
             final_state = self.cpu_sampler.run(clean_state).result()
+            t_solve = time.perf_counter() - t_solve_0
 
             res_sampleset = final_state.subsamples
 
@@ -244,6 +247,7 @@ class BaseRouter(hybrid.Runnable):
             
             extra_metrics = {
                 "from_qpu": False,
+                "solve_time": t_solve,
                 **emb_metrics
             }
 
