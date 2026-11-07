@@ -2,7 +2,7 @@ from collections import deque
 import json
 import math
 import time
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 from urllib.parse import urlparse
 import dimod
 from dotenv import load_dotenv
@@ -90,22 +90,21 @@ def run_comparative_suite(bqm: dimod.BinaryQuadraticModel, orchestratorEA: Embed
     results = []
 
     #rotazione delle policy
-    execution_tasks = []
-    #execution_tasks = [
-    #{
-    #    "name": "embedding_aware",
-    #    "run": lambda: orchestratorEA.solve(
-    #        bqm, meta, 
-    #        global_embedding_bench=global_embedding,
-    #        is_all_embeddable_bench=is_all_embeddable,
-    #        benchmark=True, 
-    #        embedding_time=embedding_time, 
-    #        seed=seed, 
-    #        target_graph=target_graph, 
-    #        qpu_identity=qpu_identity
-    #        )
-    #    }
-    #]
+    execution_tasks = [
+    {
+        "name": "embedding_aware",
+        "run": lambda: orchestratorEA.solve(
+            bqm, meta, 
+            global_embedding_bench=global_embedding,
+            is_all_embeddable_bench=is_all_embeddable,
+            benchmark=True, 
+            embedding_time=embedding_time, 
+            seed=seed, 
+            target_graph=target_graph, 
+            qpu_identity=qpu_identity
+            )
+        }
+    ]
 
     #aggiungo dinamicamente tutte le altre policy della pipeline
     for policy in pipeline_policies:
@@ -195,7 +194,7 @@ def execute_files_benchmark(orchestratorEA: EmbeddingAwareOrchestrator, status_d
     os.makedirs(results_dir, exist_ok=True) #assicura che la cartella esista
 
     code_version = status_dict["code_version"]
-    base_name = f"orchestrator_test_results_qpu_access_time_all_policy.{code_version}"
+    base_name = f"orchestrator_test_results.{code_version}"
     suffix = ".parquet"
 
     orchestrators_results = os.path.join(results_dir, f"{base_name}{suffix}")
