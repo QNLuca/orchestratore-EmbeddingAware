@@ -419,6 +419,9 @@ class OnlyEABasedPolicy(BasePolicy):
             "chain_strength_prefactor": chain_strength_prefactor if chain_strength_prefactor is not None else 1.414,
 
             "chain_break_fraction": avg_chain_break,
+            "physical_build_time": router.total_build_time,
+            "solve_time": router.total_solve_time,
+            "unembed_time": router.total_unembed_time,
 
            **eqi_stats,
            **cqmResults,
