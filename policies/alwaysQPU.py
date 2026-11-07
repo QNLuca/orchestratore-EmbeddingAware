@@ -1,5 +1,5 @@
-import math
 import os
+import random
 
 import hybrid
 import dimod
@@ -16,9 +16,12 @@ from subQUBO import SubQUBO
 from dwave.embedding import embed_bqm, unembed_sampleset, chain_break_frequency
 from dwave.embedding.chain_breaks import majority_vote
 from dwave.embedding.chain_strength import uniform_torque_compensation
+from dwave.cloud.exceptions import SolverError, InvalidAPIResponseError, PollingTimeout, ProblemUploadError, RequestTimeout
 
 from dwave.system import DWaveSampler, FixedEmbeddingComposite
 from dotenv import load_dotenv
+
+from utils.mockSolverOffline import OfflineQPUSolver
 
 #carica le variabili contenute nel file .env
 load_dotenv()
@@ -28,24 +31,9 @@ DWAVE_API_KEY = os.getenv("DWAVE_API_TOKEN")
 class AlwaysQPUEmbeddableRouter(BaseRouter):
     """Invia a QPU ogni sub-problema per cui si riesce a calcolare un embedding valido."""
     def __init__(self, qpu_sampler, cpu_sampler, qpu_identity = None, target_graph=None, chain_strength_prefactor=None,seed = None, **kwargs):
-        super().__init__(qpu_sampler=qpu_sampler, cpu_sampler=cpu_sampler, chain_strength_prefactor=chain_strength_prefactor, **kwargs)
-        self.target_graph = target_graph
-        self.seed = seed
-        self.qpu_identity = qpu_identity
+        super().__init__(qpu_sampler=qpu_sampler, cpu_sampler=cpu_sampler, chain_strength_prefactor=chain_strength_prefactor,
+                         seed=seed, target_graph=target_graph, qpu_identity=qpu_identity, **kwargs)
 
-        self.chain_break_fractions = []
-        self.tp = 0  # True Positive
-        self.fp = 0  # False Positive
-        self.tn = 0  # True Negative
-        self.fn = 0  # False Negative
-
-        self.all_eqi = []
-        self.all_max_chains = []
-        self.all_mean_chains = []
-        self.all_median_chains = []
-        self.all_long_chain_fractions = []
-        self.all_expansions = []
-        self.all_physical_nodes = []
 
     def next(self, state, **kwargs):
         sub_bqm = state.subproblem
@@ -53,32 +41,12 @@ class AlwaysQPUEmbeddableRouter(BaseRouter):
 
         embedding, is_embeddable, _ = sub_qubo.compute_embedding(sub_bqm, self.target_graph, self.seed)
 
-        res_state = self._execute_route(state, route_to_qpu=is_embeddable, embedding=embedding, qpu_identity = self.qpu_identity)
+        res_state = self._execute_route(state, route_to_qpu=is_embeddable, embedding=embedding)
 
         proxy_metrics = res_state.info.get("proxy_metrics", {})
 
         if proxy_metrics:
-            from_qpu = proxy_metrics.get("from_qpu", False)
-            good_embedding = proxy_metrics.get("good_embedding", False)
-            if "chain_break_fraction" in proxy_metrics:
-                self.chain_break_fractions.append(proxy_metrics["chain_break_fraction"])
-            if "eqi" in proxy_metrics:
-                self.all_eqi.append(proxy_metrics["eqi"])
-                self.all_max_chains.append(proxy_metrics["max_chain"])
-                self.all_mean_chains.append(proxy_metrics["mean_chain"])
-                self.all_median_chains.append(proxy_metrics["median_chain"])
-                self.all_long_chain_fractions.append(proxy_metrics["long_chain_fraction"])
-                self.all_expansions.append(proxy_metrics["expansion"]) # == mean_chain
-                self.all_physical_nodes.append(proxy_metrics["physical_nodes"])
-
-            if good_embedding and from_qpu:
-                self.tp += 1
-            if not good_embedding and from_qpu:
-                self.fp +=1
-            if good_embedding and not from_qpu:
-                self.fn +=1
-            if not good_embedding and not from_qpu:
-                self.tn +=1
+            self._compute_proxy_metrics(proxy_metrics)
 
         return state.updated(subsamples=res_state)
 
@@ -97,8 +65,14 @@ class AlwaysQPUEmbeddablePolicy(BasePolicy):
         is_maximize = meta.get("is_maximize", False)
 
         chain_strength_prefactor = meta.get('chain_strength_prefactor')
+
+        mybqm = SubQUBO(bqm)
         
-        qpu_target_global = hybrid.SimulatedAnnealingProblemSampler(num_reads=20, num_sweeps=1000)
+        bqm_num_vars = mybqm.num_variables
+        bqm_avg_degree = mybqm.average_degree
+        bqm_density = mybqm.density
+        
+        qpu_target_global = hybrid.SimulatedAnnealingProblemSampler(num_reads=40, num_sweeps=1000)
 
         start_time = time.perf_counter()
         
@@ -112,7 +86,8 @@ class AlwaysQPUEmbeddablePolicy(BasePolicy):
                 chain_strength = uniform_torque_compensation(
                     bqm, embedding=global_embedding, prefactor=1.414
                 )
-
+            successLeap = False
+            
             if DWAVE_API_KEY:
                             
                 qpu_sampler = DWaveSampler(solver=dict(identity=qpu_identity))
@@ -121,42 +96,66 @@ class AlwaysQPUEmbeddablePolicy(BasePolicy):
 
                 t_start = time.perf_counter()
 
-                res_sampleset = fixed_composite.sample(
-                    bqm,
-                    chain_strength=chain_strength,
-                    num_reads=40,
-                    annealing_time =20
-                )
+                max_retries = 3
+                retry_delay = 1.0
+                res_sampleset = None
 
-                t_end = time.perf_counter()
+                for attempt in range(1, max_retries + 1):
+                    try:
+                        t_start = time.perf_counter()   
+                        res_sampleset = fixed_composite.sample(
+                            bqm,
+                            chain_strength=chain_strength,
+                            num_reads=40,
+                            annealing_time=20
+                        )   
+                        t_end = time.perf_counter()
+                        wall_service_time = t_end - t_start 
+                        final_time = t_end - start_time
+                        successLeap = True
+                        break  #successo, esco dal ciclo
+                    
+                    except (SolverError, InvalidAPIResponseError, PollingTimeout, ProblemUploadError, RequestTimeout) as e:
+                        print(f"Tentativo {attempt}/{max_retries} fallito sulla QPU: {type(e).__name__}: {e}")
+                        if attempt == max_retries:
+                            print(f"QPU non disponibile dopo {max_retries} tentativi. "
+                                            f"Procedo con il fallback locale.")
+                            #esco dal ciclo
+                            break
+                        #attesa variabile prima del prossimo tentativo
+                        sleep_time = retry_delay + random.uniform(0, 0.5)
+                        time.sleep(sleep_time)
+                        retry_delay *= 2
+                    except Exception as e:
+                        #errori non temporanei nessun altro retry
+                        print(f"Errore non retryable su QPU: {type(e).__name__}: {e}")
+                        break
 
-                wall_service_time = t_end - t_start
+                if successLeap and res_sampleset is not None:
 
-                final_time = t_end - start_time
+                    timing_info = res_sampleset.info.get('timing', {})
 
-                timing_info = res_sampleset.info.get('timing', {})
+                    chain_break_fraction = res_sampleset.record.chain_break_fraction #media fra tutte le letture
 
-                chain_break_fraction = res_sampleset.record.chain_break_fraction #media fra tutte le letture
-                
-                #Raccolti tutti metadati temporali
-                qpu_full_timing = {
-                    "qpu_sampling_time": timing_info.get('qpu_sampling_time'),
-                    "qpu_anneal_time_per_sample": timing_info.get('qpu_anneal_time_per_sample'),
-                    "qpu_readout_time_per_sample": timing_info.get('qpu_readout_time_per_sample'),
-                    "qpu_access_time": timing_info.get('qpu_access_time'),
-                    "qpu_access_overhead_time": timing_info.get('qpu_access_overhead_time'),
-                    "qpu_programming_time": timing_info.get('qpu_programming_time'),
-                    "qpu_delay_time_per_sample": timing_info.get('qpu_delay_time_per_sample'),
-                    "total_post_processing_time": timing_info.get('total_post_processing_time'),
-                    "post_processing_overhead_time": timing_info.get('post_processing_overhead_time'),
-                    "service_time": wall_service_time
-                }                
+                    #Raccolti tutti metadati temporali
+                    qpu_full_timing = {
+                        "qpu_sampling_time": timing_info.get('qpu_sampling_time'),
+                        "qpu_anneal_time_per_sample": timing_info.get('qpu_anneal_time_per_sample'),
+                        "qpu_readout_time_per_sample": timing_info.get('qpu_readout_time_per_sample'),
+                        "qpu_access_time": timing_info.get('qpu_access_time'),
+                        "qpu_access_overhead_time": timing_info.get('qpu_access_overhead_time'),
+                        "qpu_programming_time": timing_info.get('qpu_programming_time'),
+                        "qpu_delay_time_per_sample": timing_info.get('qpu_delay_time_per_sample'),
+                        "total_post_processing_time": timing_info.get('total_post_processing_time'),
+                        "post_processing_overhead_time": timing_info.get('post_processing_overhead_time'),
+                    }                
 
-                extra_metrics = {
-                     **qpu_full_timing,
-                }        
+                    extra_metrics = {
+                        "solve_time": wall_service_time,
+                         **qpu_full_timing,
+                    }        
                         
-            else:               
+            if not DWAVE_API_KEY or not successLeap:               
                 t_build_0 = time.perf_counter()         
                 target_bqm = embed_bqm(
                     bqm, 
@@ -165,6 +164,16 @@ class AlwaysQPUEmbeddablePolicy(BasePolicy):
                     chain_strength=chain_strength
                 )
                 t_build = time.perf_counter() - t_build_0
+
+                ################# PER TEST LOCALE QPU_ACCESS_TIME #####################
+
+                estimated_runtime_us = OfflineQPUSolver.estimate_qpu_access_time(
+                    num_qubits=len(target_bqm.variables), 
+                    num_reads=40, 
+                    annealing_time=20
+                )
+                
+                ################################################################
 
                 t_start_solve = time.perf_counter()
                 init_state = hybrid.State.from_problem(target_bqm)
@@ -185,7 +194,8 @@ class AlwaysQPUEmbeddablePolicy(BasePolicy):
                 extra_metrics = {
                     "physical_build_time": t_build,
                     "unembed_time": t_unembed,
-                    "t_solve": t_solve_total
+                    "solve_time": t_solve_total,
+                    "estimated_leap_qpu_time_us": estimated_runtime_us,
                 }
 
 
@@ -225,6 +235,9 @@ class AlwaysQPUEmbeddablePolicy(BasePolicy):
             return {
                 "instance_id": lp_filename,
                 "seed": seed,
+                "num_vars": bqm_num_vars,
+                "avg_degree": bqm_avg_degree,
+                "density": bqm_density,
                 "policy": self.name,
                 "is_maximization_objective": is_maximize,
                 "best_energy": best_energy,
@@ -254,10 +267,10 @@ class AlwaysQPUEmbeddablePolicy(BasePolicy):
                 "long_chain_fraction": long_chain_fraction,
 
                 **extra_metrics,
-                **cqmResults
+                **cqmResults,
             }
 
-        qpu_target = hybrid.SimulatedAnnealingProblemSampler(num_reads=20, num_sweeps=1000)
+        qpu_target = hybrid.SimulatedAnnealingProblemSampler(num_reads=40, num_sweeps=1000)
         cpu_fallback = hybrid.TabuSubproblemSampler(num_reads=20)
 
         router = AlwaysQPUEmbeddableRouter(
@@ -319,6 +332,8 @@ class AlwaysQPUEmbeddablePolicy(BasePolicy):
         all_physical_nodes = router.all_physical_nodes
         all_expansions = router.all_expansions
         all_long_chain_fractions = router.all_long_chain_fractions
+
+        all_estimated_qpu = router.estimated_runtime_total
         
         if all_eqi:
             eqi_stats = {
@@ -356,6 +371,9 @@ class AlwaysQPUEmbeddablePolicy(BasePolicy):
         return {
             "instance_id": lp_filename,
             "seed": seed,
+            "num_vars": bqm_num_vars,
+            "avg_degree": bqm_avg_degree,
+            "density": bqm_density,
             "is_maximization_objective": is_maximize,
             "policy": self.name,
             "best_energy": best_energy,
@@ -375,5 +393,6 @@ class AlwaysQPUEmbeddablePolicy(BasePolicy):
             "chain_break_fraction": avg_chain_break,
             
            **eqi_stats,
-           **cqmResults            
+           **cqmResults,
+           "estimated_leap_qpu_time_us": all_estimated_qpu,            
         }

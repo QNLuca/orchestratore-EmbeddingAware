@@ -4,11 +4,14 @@ from typing import Any, Dict
 import dimod
 import hybrid
 
+from subQUBO import SubQUBO
 from utils.cqmUtilities import CqmUtilities
 from policies.basePolicy import BasePolicy
 
 from dwave.system import DWaveSampler, FixedEmbeddingComposite
 from dotenv import load_dotenv
+
+from utils.mockSolverOffline import OfflineQPUSolver
 
 #carica le variabili contenute nel file .env
 load_dotenv()
@@ -66,6 +69,29 @@ DWAVE_API_KEY = os.getenv("DWAVE_API_TOKEN")
 #            self.counter_dict[winner] += 1
 #        return state 
 
+class QPUTimeEstimator(hybrid.Runnable):
+    """Intercetta i sub-problemi nel ramo QPU e accumula il tempo stimato."""
+    def __init__(self, time_accumulator_dict, key_name, num_reads=40, annealing_time=20, **runopts):
+        super().__init__(**runopts)
+        self.acc_dict = time_accumulator_dict
+        self.key_name = key_name
+        self.num_reads = num_reads
+        self.annealing_time = annealing_time
+
+    def next(self, state, **runopts):
+        sub_bqm = getattr(state, 'subproblem', None)
+        if sub_bqm and len(sub_bqm.variables) > 0:
+            num_qubits = len(sub_bqm.variables)
+            #calcola il tempo con solver fittizio
+            estimated_us = OfflineQPUSolver.estimate_qpu_access_time(
+                num_qubits=num_qubits,
+                num_reads=self.num_reads,
+                annealing_time=self.annealing_time
+            )
+            self.acc_dict[self.key_name] += estimated_us
+            
+        return state
+
 class RaceCounter(hybrid.Runnable):
     """
     Runnable custom compatibile con hybrid.Race e thread asincroni.
@@ -96,11 +122,18 @@ class KerberosPolicy(BasePolicy):
 
         is_maximize = meta.get("is_maximize", False)
 
+        mybqm = SubQUBO(bqm)
+        
+        bqm_num_vars = mybqm.num_variables
+        bqm_avg_degree = mybqm.average_degree
+        bqm_density = mybqm.density
+
         #dizionario per tracciare le invocazioni esatte di ciascun ramo
         calls = {
             "cpu_tabu_calls": 0,
             "cpu_sa_calls": 0,
-            "qpu_calls": 0
+            "qpu_calls": 0,
+            "estimated_leap_qpu_time_us": 0.0
         }
 
         if DWAVE_API_KEY:
@@ -122,6 +155,7 @@ class KerberosPolicy(BasePolicy):
                         )
                         | hybrid.Const(subsamples=None) #reset subsamples
                         | RaceCounter(calls, "qpu_calls")
+                        | QPUTimeEstimator(calls, "estimated_leap_qpu_time_us", num_reads=40, annealing_time=20)
                         | hybrid.SimulatedAnnealingSubproblemSampler(num_reads=10, num_sweeps=500)
                         | hybrid.SplatComposer()
                     )
@@ -177,6 +211,9 @@ class KerberosPolicy(BasePolicy):
         return {
             "instance_id": lp_filename,
             "seed": seed,
+            "num_vars": bqm_num_vars,
+            "avg_degree": bqm_avg_degree,
+            "density": bqm_density,
             "is_maximization_objective": is_maximize,
             "policy": self.name,
             "best_energy": best_energy,
@@ -188,5 +225,6 @@ class KerberosPolicy(BasePolicy):
             "cpu_calls": total_cpu,
             "qpu_utilization_ratio": total_qpu/total_calls if total_calls > 0 else 0.0,
             
-            **cqmResults
+            **cqmResults,
+            "estimated_leap_qpu_time_us": calls["estimated_leap_qpu_time_us"],
         }

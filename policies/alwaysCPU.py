@@ -3,6 +3,7 @@ from typing import Any, Dict
 import dimod
 import hybrid
 
+from subQUBO import SubQUBO
 from utils.cqmUtilities import CqmUtilities
 from policies.basePolicy import BasePolicy
 from policies.baseRouter import BaseRouter
@@ -14,7 +15,7 @@ class AlwaysCPURouter(BaseRouter):
     
     def next(self, state, **kwargs):
 
-        res_state = self._execute_route(state, route_to_qpu=False, qpu_identity=None)
+        res_state = self._execute_route(state, route_to_qpu=False)
 
         return state.updated(subsamples=res_state)
 
@@ -32,6 +33,12 @@ class AlwaysCPUPolicy(BasePolicy):
         cqm = meta.get("cqm",None)
 
         is_maximize = meta.get("is_maximize", False)
+
+        mybqm = SubQUBO(bqm)
+        
+        bqm_num_vars = mybqm.num_variables
+        bqm_avg_degree = mybqm.average_degree
+        bqm_density = mybqm.density
 
         start_time = time.perf_counter()
         
@@ -84,6 +91,9 @@ class AlwaysCPUPolicy(BasePolicy):
         return {
             "instance_id": lp_filename,
             "seed": seed,
+            "num_vars": bqm_num_vars,
+            "avg_degree": bqm_avg_degree,
+            "density": bqm_density,
             "is_maximization_objective": is_maximize,
             "policy": self.name,
             "best_energy": best_energy,
@@ -96,5 +106,6 @@ class AlwaysCPUPolicy(BasePolicy):
             "qpu_utilization_ratio": 0.0,
             "decomposed": True,
             
-            **cqmResults
+            **cqmResults,
+            "estimated_leap_qpu_time_us": 0.0,
         }

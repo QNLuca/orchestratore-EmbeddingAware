@@ -237,11 +237,11 @@ def execute_files_benchmark(orchestratorEA: EmbeddingAwareOrchestrator, status_d
         "parameters": {
             "max_iter": max_iter,
             "convergence": convergence,
-            "num_reads": 20,
+            "num_reads": 40,
         },
         "minorminer_seed": seed,
         "qplib_instances": [str(f.name) for f in lp_files],
-        "hardware_backend": f"DWaveSampler: {qpu_identity}" if os.getenv("DWAVE_API_TOKEN") else "None: Simulated Annealing"
+        "hardware_backend": f"DWaveSampler: {qpu_identity}" if DWAVE_API_KEY else "None: Simulated Annealing"
     }
 
     #file json per preservare metadati test
@@ -249,12 +249,23 @@ def execute_files_benchmark(orchestratorEA: EmbeddingAwareOrchestrator, status_d
         json.dump(experiment_metadata, f, indent=4)
     print(f"Creato file di metadati JSON: {json_metadata_path}")
 
-    target_graph=None
-    qpu_identity=None
+    target_graph=dnx.zephyr_graph(12)
+    qpu_identity=None 
+
+    #Advantage2_system1, graph_id: 01b03fc8dc
+    #qpu_identity = {
+    #"name": "Advantage2_system1",
+    #"version": {"graph_id": "01b03fc8dc"},
+    #}
+
     if DWAVE_API_KEY:
-        sampler = DWaveSampler(topology__type="zephyr")
-        qpu_identity = sampler.solver.identity
-        target_graph = sampler.to_networkx_graph()
+        if qpu_identity:
+            sampler = DWaveSampler(solver=dict(identity=qpu_identity))
+            target_graph = sampler.to_networkx_graph()
+        else:
+            sampler = DWaveSampler(topology__type="zephyr")
+            qpu_identity = sampler.solver.identity
+            target_graph = sampler.to_networkx_graph()
 
     for idx, filepath in enumerate(todo_files, 1):
         fname = os.path.basename(filepath)

@@ -1,6 +1,7 @@
 import hashlib
 import math
 import os
+import random
 import threading
 import time
 from typing import Any, Dict, Optional
@@ -16,6 +17,7 @@ from dwave.system import DWaveSampler, FixedEmbeddingComposite
 from dwave.embedding import embed_bqm, unembed_sampleset, chain_break_frequency
 from dwave.embedding.chain_breaks import majority_vote
 from dwave.embedding.chain_strength import uniform_torque_compensation
+from dwave.cloud.exceptions import SolverError, InvalidAPIResponseError, PollingTimeout, ProblemUploadError, RequestTimeout
 
 import redis
 from rq import Queue
@@ -407,7 +409,7 @@ class EmbeddingAwareOrchestrator:
         max_global_size = 1337
         
         #features del bqm
-        bqm_num_vars = bqm.num_variables
+        bqm_num_vars = mybqm.num_variables
         bqm_avg_degree = mybqm.average_degree
         bqm_density = mybqm.density
 
@@ -485,6 +487,8 @@ class EmbeddingAwareOrchestrator:
                     bqm, embedding=global_embedding, prefactor=1.414
                 )
 
+            successLeap = False
+
             if DWAVE_API_KEY:
                 
                 if benchmark:  
@@ -496,60 +500,86 @@ class EmbeddingAwareOrchestrator:
 
                 t_start = time.perf_counter()
 
-                res_sampleset = fixed_composite.sample(
-                    bqm,
-                    chain_strength=chain_strength,
-                    num_reads=40,
-                    annealing_time =20
-                )
+                max_retries = 3
+                retry_delay = 1.0
+                res_sampleset = None
 
-                t_end = time.perf_counter()
+                for attempt in range(1, max_retries + 1):
+                    try:
+                        t_start = time.perf_counter()   
+                        res_sampleset = fixed_composite.sample(
+                            bqm,
+                            chain_strength=chain_strength,
+                            num_reads=40,
+                            annealing_time=20
+                        )   
+                        t_end = time.perf_counter()
+                        wall_service_time = t_end - t_start
 
-                wall_service_time = t_end - t_start
+                        final_time = t_end - start_time
+                        successLeap = True
+                        break  #successo, esco dal ciclo
+                    
+                    except (SolverError, InvalidAPIResponseError, PollingTimeout, ProblemUploadError, RequestTimeout) as e:
+                        print(f"Tentativo {attempt}/{max_retries} fallito sulla QPU: {type(e).__name__}: {e}")
+                        if attempt == max_retries:
+                            print(f"QPU non disponibile dopo {max_retries} tentativi. "
+                                            f"Procedo con il fallback locale.")
+                            #esco dal ciclo
+                            break
+                        #attesa variabile prima del prossimo tentativo
+                        sleep_time = retry_delay + random.uniform(0, 0.5)
+                        time.sleep(sleep_time)
+                        retry_delay *= 2
+                    except Exception as e:
+                        #errori non temporanei nessun altro retry
+                        print(f"Errore non retryable su QPU: {type(e).__name__}: {e}")
+                        break
 
-                final_time = t_end - start_time
+                #estrazione di timing
+                if successLeap and res_sampleset is not None:
+                    chain_break_fraction = res_sampleset.record.chain_break_fraction #media fra tutte le letture
 
-                chain_break_fraction = res_sampleset.record.chain_break_fraction #media fra tutte le letture
+                    timing_info = res_sampleset.info.get('timing', {})
 
-                timing_info = res_sampleset.info.get('timing', {})
-                
-                #Raccolti tutti metadati temporali
-                qpu_full_timing = {
-                    "qpu_sampling_time": timing_info.get('qpu_sampling_time'),
-                    "qpu_anneal_time_per_sample": timing_info.get('qpu_anneal_time_per_sample'),
-                    "qpu_readout_time_per_sample": timing_info.get('qpu_readout_time_per_sample'),
-                    "qpu_access_time": timing_info.get('qpu_access_time'),
-                    "qpu_access_overhead_time": timing_info.get('qpu_access_overhead_time'),
-                    "qpu_programming_time": timing_info.get('qpu_programming_time'),
-                    "qpu_delay_time_per_sample": timing_info.get('qpu_delay_time_per_sample'),
-                    "total_post_processing_time": timing_info.get('total_post_processing_time'),
-                    "post_processing_overhead_time": timing_info.get('post_processing_overhead_time'),
-                    "service_time": wall_service_time
-                }
+                    #Raccolti tutti metadati temporali
+                    qpu_full_timing = {
+                        "qpu_sampling_time": timing_info.get('qpu_sampling_time'),
+                        "qpu_anneal_time_per_sample": timing_info.get('qpu_anneal_time_per_sample'),
+                        "qpu_readout_time_per_sample": timing_info.get('qpu_readout_time_per_sample'),
+                        "qpu_access_time": timing_info.get('qpu_access_time'),
+                        "qpu_access_overhead_time": timing_info.get('qpu_access_overhead_time'),
+                        "qpu_programming_time": timing_info.get('qpu_programming_time'),
+                        "qpu_delay_time_per_sample": timing_info.get('qpu_delay_time_per_sample'),
+                        "total_post_processing_time": timing_info.get('total_post_processing_time'),
+                        "post_processing_overhead_time": timing_info.get('post_processing_overhead_time'),                   
+                    }
 
-                
-                extra_metrics = {
-                     **qpu_full_timing,
-                }
 
-            else:
+                    extra_metrics = {
+                        "solve_time": wall_service_time,
+                         **qpu_full_timing,
+                    }
+
+            if not DWAVE_API_KEY or not successLeap:
+
                 t_build_0 = time.perf_counter()
                 target_bqm = embed_bqm(
                     bqm, 
                     embedding=global_embedding, 
-                    target_adjacency=target_graph,
+                    target_adjacency=target_graph, #se ho API_KEY allora target_graph è già topologia reale
                     chain_strength=chain_strength
                 )
                 t_build = time.perf_counter() - t_build_0
 
                 ################# PER TEST LOCALE QPU_ACCESS_TIME #####################
-                offline_solver = OfflineQPUSolver()
 
-                estimated_runtime_us = offline_solver.estimate_qpu_access_time(
+                estimated_runtime_us = OfflineQPUSolver.estimate_qpu_access_time(
                     num_qubits=len(target_bqm.variables), 
                     num_reads=40, 
                     annealing_time=20
                 )
+
                 ################################################################
 
                 t_start_solve = time.perf_counter()
@@ -575,7 +605,8 @@ class EmbeddingAwareOrchestrator:
                 extra_metrics = {
                     "physical_build_time": t_build,
                     "unembed_time": t_unembed,
-                    "t_solve": t_solve_total
+                    "solve_time": t_solve_total,
+                    "estimated_leap_qpu_time_us": estimated_runtime_us,
                 }
 
             total_wall_clock = final_time + t_embedding
@@ -611,6 +642,9 @@ class EmbeddingAwareOrchestrator:
                 #Routing e Policy
                 "instance_id": lp_filename,
                 "seed": seed,
+                "num_vars": bqm_num_vars,
+                "avg_degree": bqm_avg_degree,
+                "density": bqm_density,
                 "is_maximization_objective": is_maximize,
                 "policy": self.policy_mode,
                 "qpu_calls": 1,
@@ -645,7 +679,6 @@ class EmbeddingAwareOrchestrator:
 
                 **extra_metrics,
                 **cqmResults,
-                "estimated_leap_qpu_time_us": estimated_runtime_us,
             }
 
             if verbose:
@@ -768,6 +801,9 @@ class EmbeddingAwareOrchestrator:
             # 1. Area Routing & Policy
             "instance_id": lp_filename,
             "seed": seed,
+            "num_vars": bqm_num_vars,
+            "avg_degree": bqm_avg_degree,
+            "density": bqm_density,
             "is_maximization_objective": is_maximize,
             "policy": self.policy_mode,
             "qpu_calls": router.qpu_calls,

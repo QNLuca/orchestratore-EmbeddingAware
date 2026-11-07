@@ -62,7 +62,6 @@ def solve_subqubo_rq(sub_bqm: dimod.BinaryQuadraticModel,
                 max_retries = 3
                 retry_delay = 1.0
                 res_sampleset = None
-                wall_service_time = 0.0
 
                 for attempt in range(1, max_retries + 1):
                     try:
@@ -93,7 +92,7 @@ def solve_subqubo_rq(sub_bqm: dimod.BinaryQuadraticModel,
                         retry_delay *= 2
                     except Exception as e:
                         #errori non temporanei nessun altro retry
-                        print(f"[QPU] errore non retryable: {type(e).__name__}: {e}")
+                        print(f"Errore non retryable su QPU: {type(e).__name__}: {e}")
                         break
 
                 #estrazione di timing
@@ -169,13 +168,13 @@ def solve_subqubo_rq(sub_bqm: dimod.BinaryQuadraticModel,
                 t_unembed = time.perf_counter() - t_unembed_0
 
                 ################# PER TEST LOCALE QPU_ACCESS_TIME #####################
-                offline_solver = OfflineQPUSolver()
 
-                estimated_runtime_us = offline_solver.estimate_qpu_access_time(
+                estimated_runtime_us = OfflineQPUSolver.estimate_qpu_access_time(
                     num_qubits=len(target_bqm.variables), 
                     num_reads=40, 
                     annealing_time=20
                 )
+
                 ################################################################
 
                 res_sampleset = logical_sampleset
