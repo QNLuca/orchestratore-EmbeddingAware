@@ -18,57 +18,6 @@ load_dotenv()
 
 DWAVE_API_KEY = os.getenv("DWAVE_API_TOKEN")
 
-#class TrackingArgMin(hybrid.ArgMin):
-#    """
-#    ArgMin custom che confronta gli States in arrivo da hybrid.Race,
-#    seleziona il migliore e aggiorna un dizionario di conteggio.
-#    """
-#    def __init__(self, counter_dict: dict, branch_keys: list = None, **runopts):
-#        super().__init__(**runopts)
-#        self.counter_dict = counter_dict
-#        #nomi delle chiavi da incrementare nel dizionario in base all'indice del ramo
-#        self.branch_keys = branch_keys or ["tabu", "sa", "qpu"]
-#
-#    def next(self, states, **runopts):
-#        #esegue il confronto e calcola lo State migliore nativamente
-#        best_state = super().next(states, **runopts)
-#        best_energy = float(best_state.samples.first.energy)
-#
-#        #individua l'indice del ramo che ha generato l'energia minima
-#        for idx, state in enumerate(states):
-#            energy = float(state.samples.first.energy)
-#            #confronto con tolleranza per numeri in virgola mobile
-#            if abs(energy - best_energy) < 1e-9:
-#                if idx < len(self.branch_keys):
-#                    key = self.branch_keys[idx]
-#                    self.counter_dict[key] = self.counter_dict.get(key, 0) + 1
-#                break #registra il primo ramo che ottiene il valore minimo
-#
-#        return best_state
-
-#class TagState(hybrid.Runnable):
-#    """Aggiunge una firma nei metadati dello State per identificare il ramo di appartenenza."""
-#    def __init__(self, branch_name: str, **runopts):
-#        super().__init__(**runopts)
-#        self.branch_name = branch_name
-#
-#    def next(self, state, **runopts):
-#        # Aggiunge/aggiorna il campo 'winning_branch' negli informativi dello State
-#        return state.updated(winning_branch=self.branch_name)
-
-#class WinningBranchTracer(hybrid.Runnable):
-#    """Legge il tag dello State vincente selezionato da ArgMin e incrementa il contatore relativo."""
-#    def __init__(self, counter_dict: dict, **runopts):
-#        super().__init__(**runopts)
-#        self.counter_dict = counter_dict
-#
-#    def next(self, state, **runopts):
-#        #recupera il nome del ramo vincente salvato nello State da TagState
-#        winner = state.get('winning_branch', 'unknown')
-#        if winner in self.counter_dict:
-#            self.counter_dict[winner] += 1
-#        return state 
-
 class QPUTimeEstimator(hybrid.Runnable):
     """Intercetta i sub-problemi nel ramo QPU e accumula il tempo stimato."""
     def __init__(self, time_accumulator_dict, key_name, num_reads=40, annealing_time=20, **runopts):

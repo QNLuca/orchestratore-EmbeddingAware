@@ -33,6 +33,37 @@ load_dotenv()
 
 DWAVE_API_KEY = os.getenv("DWAVE_API_TOKEN")
 
+#coda globale che definisce l'ordine di rotazione delle policy
+POLICY_DEQUE = deque([
+    "embedding_aware",
+    "always_cpu",
+    "kerberos",
+    "qbsolv",
+    "mqt_qao",
+    "always_qpu_embeddable",
+    "only_features_based",
+    "only_ea_based"
+])
+
+#funzione factory per generare correttamente istanze per ogni policy
+def get_policy_instance(name: str, subproblem_size: int, max_iter: int, convergence: int, embedding_time: float):
+    if name == "always_cpu":
+        return AlwaysCPUPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence, embedding_time=embedding_time)
+    elif name == "kerberos":
+        return KerberosPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence)
+    elif name == "qbsolv":
+        return QBSolvPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence)
+    elif name == "mqt_qao":
+        return MQTQAOPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence, embedding_time=embedding_time)
+    elif name == "always_qpu_embeddable":
+        return AlwaysQPUEmbeddablePolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence, embedding_time=embedding_time)
+    elif name == "only_features_based":
+        return OnlyFeaturesBasedPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence, embedding_time=embedding_time)
+    elif name == "only_ea_based":
+        return OnlyEABasedPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence, embedding_time=embedding_time)
+    else:
+        raise ValueError(f"Policy sconosciuta: {name}")
+
 def run_comparative_suite(bqm: dimod.BinaryQuadraticModel, orchestratorEA: EmbeddingAwareOrchestrator, meta: Optional[Dict], seed=None, 
                           qpu_identity = None, target_graph = None, max_iter: Optional[int] = 5, convergence: Optional[int] = 2):
 
@@ -74,43 +105,37 @@ def run_comparative_suite(bqm: dimod.BinaryQuadraticModel, orchestratorEA: Embed
     #size del sottoproblema cresce in maniera controllata e variabile-dipendente
     subproblem_size = int(math.ceil(2.0 * math.sqrt(len(bqm.variables))))
 
-    #istanzio policy
-    pipeline_policies= deque([
-        AlwaysCPUPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence, embedding_time=embedding_time),
-        KerberosPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
-        QBSolvPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence),
-        MQTQAOPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence, embedding_time=embedding_time),
-        AlwaysQPUEmbeddablePolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence, embedding_time=embedding_time),
-        OnlyFeaturesBasedPolicy(subproblem_size=subproblem_size, max_iter=max_iter, convergence=convergence, embedding_time=embedding_time),
-        OnlyEABasedPolicy(subproblem_size=subproblem_size,max_iter=max_iter, convergence=convergence, embedding_time=embedding_time)
-    ])
-
     print(f"AVVIO BENCHMARK COMPARATIVO ROUTING POLICY (BQM N={len(bqm.variables)})")
 
     results = []
 
-    #rotazione delle policy
-    execution_tasks = [
-    {
-        "name": "embedding_aware",
-        "run": lambda: orchestratorEA.solve(
-            bqm, meta, 
-            global_embedding_bench=global_embedding,
-            is_all_embeddable_bench=is_all_embeddable,
-            benchmark=True, 
-            embedding_time=embedding_time, 
-            seed=seed, 
-            target_graph=target_graph, 
-            qpu_identity=qpu_identity
+    #itera sulla coda ruotata e istanzia dinamicamente la policy corrispondente
+    for policy_name in POLICY_DEQUE:
+        print(f"Valutazione Policy: [{policy_name}] ...")
+        
+        #istanziazione dinamica basata sul nome corrente nella deque
+        if policy_name == "embedding_aware":
+            res = orchestratorEA.solve(
+                bqm, meta, 
+                global_embedding_bench=global_embedding,
+                is_all_embeddable_bench=is_all_embeddable,
+                benchmark=True, 
+                embedding_time=embedding_time, 
+                seed=seed, 
+                target_graph=target_graph, 
+                qpu_identity=qpu_identity
             )
-        }
-    ]
-
-    #aggiungo dinamicamente tutte le altre policy della pipeline
-    for policy in pipeline_policies:
-        execution_tasks.append({
-            "name": policy.name,
-            "run": lambda p=policy: p.solve(
+        else:
+            #mappatura per istanziare la policy corretta con i parametri previsti
+            policy_obj = get_policy_instance(
+                policy_name, 
+                subproblem_size=subproblem_size, 
+                max_iter=max_iter, 
+                convergence=convergence, 
+                embedding_time=embedding_time
+            )
+            
+            res = policy_obj.solve(
                 meta=meta,
                 bqm=bqm,
                 global_embedding=global_embedding,
@@ -119,14 +144,11 @@ def run_comparative_suite(bqm: dimod.BinaryQuadraticModel, orchestratorEA: Embed
                 seed=seed,
                 qpu_identity=qpu_identity
             )
-        })
-
-    tasks_deque = deque(execution_tasks)
-    tasks_deque.rotate(1)  #sposta il primo in fondo
-    for task in tasks_deque:
-        print(f"Valutazione Policy: [{task['name']}] ...")
-        res = task["run"]() #eseguo funzione lambda con solve specifico
+            
         results.append(res)
+
+    #rotazione policy, avanti deterministicamente di 1
+    POLICY_DEQUE.rotate(1)
 
     print(f"BENCHMARK COMPARATIVO COMPLETATO (BQM N={len(bqm.variables)})")
 
@@ -199,11 +221,6 @@ def execute_files_benchmark(orchestratorEA: EmbeddingAwareOrchestrator, status_d
 
     orchestrators_results = os.path.join(results_dir, f"{base_name}{suffix}")
 
-    i = 1
-    while os.path.exists(orchestrators_results):
-        orchestrators_results = os.path.join(results_dir, f"{base_name}.{i}{suffix}")
-        i += 1
-
     json_metadata_path = orchestrators_results.replace(".parquet", ".json")
 
     #resume automatico
@@ -230,24 +247,29 @@ def execute_files_benchmark(orchestratorEA: EmbeddingAwareOrchestrator, status_d
     max_iter = 10
     convergence = 3
 
-    seed = random.randint(0,10)
-    experiment_metadata = {
-        "code_version": code_version,
-        "timestamp_start": dt.datetime.now().isoformat(),
-        "parameters": {
-            "max_iter": max_iter,
-            "convergence": convergence,
-            "num_reads": 40,
-        },
-        "minorminer_seed": seed,
-        "qplib_instances": [str(f.name) for f in lp_files],
-        "hardware_backend": f"DWaveSampler: {qpu_identity}" if DWAVE_API_KEY else "None: Simulated Annealing"
-    }
-
-    #file json per preservare metadati test
-    with open(json_metadata_path, "w", encoding="utf-8") as f:
-        json.dump(experiment_metadata, f, indent=4)
-    print(f"Creato file di metadati JSON: {json_metadata_path}")
+    #in caso di ripresa dei test, recupero seed da file json già esistente
+    if os.path.exists(json_metadata_path):
+        with open(json_metadata_path, "r", encoding="utf-8") as f:
+            metadata = json.load(f)
+            seed = metadata.get("minorminer_seed")
+        print(f"Ripristinato seed precedente dal file JSON: {seed}")
+    else:
+        seed = random.randint(0, 10)
+        experiment_metadata = {
+            "code_version": code_version,
+            "timestamp_start": dt.datetime.now().isoformat(),
+            "parameters": {
+                "max_iter": max_iter,
+                "convergence": convergence,
+                "num_reads": 40,
+            },
+            "minorminer_seed": seed,
+            "qplib_instances": [str(f.name) for f in lp_files],
+            "hardware_backend": f"DWaveSampler: {qpu_identity}" if DWAVE_API_KEY else "None: Simulated Annealing"
+        }
+        with open(json_metadata_path, "w", encoding="utf-8") as f:
+            json.dump(experiment_metadata, f, indent=4)
+        print(f"Creato file di metadati JSON con nuovo seed ({seed}): {json_metadata_path}")
 
     target_graph=dnx.zephyr_graph(12)
     qpu_identity=None 

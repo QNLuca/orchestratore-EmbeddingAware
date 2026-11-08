@@ -37,7 +37,7 @@ orchestrator = EmbeddingAwareOrchestrator(
 )
 
 benchmark_status = {
-    "code_version": "v1.0",
+    "code_version": "v1.0.1",
     "running": False,
     "current_file": None,
     "completed": 0,
