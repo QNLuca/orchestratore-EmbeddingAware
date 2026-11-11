@@ -203,15 +203,7 @@ class AlwaysQPUEmbeddablePolicy(BasePolicy):
 
             avg_chain_break = float(np.mean(chain_break_fraction)) if len(chain_break_fraction) > 0 else 0.0
 
-            best_energy = float(res_sampleset.first.energy)
-
-            if is_maximize:
-                best_energy = -best_energy
-
-            rel_gap = abs(best_energy - bestknown_solution) / abs(bestknown_solution) if bestknown_solution else None
-            abs_gap = abs(best_energy - bestknown_solution) if bestknown_solution is not None else None
-
-            best_sample = dict(res_sampleset.first.sample)
+            #best_sample = dict(res_sampleset.first.sample)
 
             emb_metrics = SubQUBO.compute_advanced_embedding_metrics(global_embedding,bqm,avg_chain_break)
 
@@ -229,7 +221,15 @@ class AlwaysQPUEmbeddablePolicy(BasePolicy):
             cqmResults = {}
         
             if len(cqm.constraints)>0:
-                cqmResults = CqmUtilities.evaluate_cqm_feasibility(best_sample,invert_func, cqm)
+                all_samples = res_sampleset
+                cqmResults = CqmUtilities.evaluate_cqm_feasibility(all_samples,invert_func, cqm, is_maximize)
+                best_energy = cqmResults['cqm_objective_energy']
+            else:
+                raw_energy = float(final_state.samples.first.energy)
+                best_energy = -raw_energy if is_maximize else raw_energy
+
+            rel_gap = abs(best_energy - bestknown_solution) / abs(bestknown_solution) if bestknown_solution else None
+            abs_gap = abs(best_energy - bestknown_solution) if bestknown_solution is not None else None
 
 
             return {
@@ -311,19 +311,20 @@ class AlwaysQPUEmbeddablePolicy(BasePolicy):
 
         total_wall_clock = final_time + self.embedding_time
 
-        best_energy = float(final_state.samples.first.energy)
+        #best_sample = dict(final_state.samples.first.sample)
 
-        if is_maximize:
-            best_energy = -best_energy
-
-        rel_gap = abs(best_energy - bestknown_solution) / abs(bestknown_solution) if bestknown_solution else None
-        abs_gap = abs(best_energy - bestknown_solution) if bestknown_solution is not None else None
-
-        best_sample = dict(final_state.samples.first.sample)
         cqmResults = {}
         
         if len(cqm.constraints)>0:
-            cqmResults = CqmUtilities.evaluate_cqm_feasibility(best_sample,invert_func, cqm)
+            all_samples = final_state.samples #sarà solo 1
+            cqmResults = CqmUtilities.evaluate_cqm_feasibility(all_samples,invert_func, cqm, is_maximize)
+            best_energy = cqmResults['cqm_objective_energy']
+        else:
+            raw_energy = float(final_state.samples.first.energy)
+            best_energy = -raw_energy if is_maximize else raw_energy
+
+        rel_gap = abs(best_energy - bestknown_solution) / abs(bestknown_solution) if bestknown_solution else None
+        abs_gap = abs(best_energy - bestknown_solution) if bestknown_solution is not None else None
 
         all_eqi = router.all_eqi
         all_max_chains = router.all_max_chains

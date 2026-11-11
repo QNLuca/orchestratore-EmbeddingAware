@@ -252,7 +252,7 @@ def execute_files_benchmark(orchestratorEA: EmbeddingAwareOrchestrator, status_d
         with open(json_metadata_path, "r", encoding="utf-8") as f:
             metadata = json.load(f)
             seed = metadata.get("minorminer_seed")
-        print(f"Ripristinato seed precedente dal file JSON: {seed}")
+        print(f"Ripristinato seed da precedente file JSON")
     else:
         seed = random.randint(0, 10)
         experiment_metadata = {
@@ -269,7 +269,7 @@ def execute_files_benchmark(orchestratorEA: EmbeddingAwareOrchestrator, status_d
         }
         with open(json_metadata_path, "w", encoding="utf-8") as f:
             json.dump(experiment_metadata, f, indent=4)
-        print(f"Creato file di metadati JSON con nuovo seed ({seed}): {json_metadata_path}")
+        print(f"Creato file di metadati JSON: {json_metadata_path}")
 
     target_graph=dnx.zephyr_graph(12)
     qpu_identity=None 

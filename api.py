@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 
 import traceback
 import logging
+from version import __version__
 
 #carica le variabili contenute nel file .env
 load_dotenv()
@@ -31,13 +32,13 @@ redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0, decode_respon
 
 #inizializzo l'orchestratore emebedding-aware
 orchestrator = EmbeddingAwareOrchestrator(
-    policy_mode='embedding_aware',
+    policy_name='embedding_aware',
     max_iter=10,
     convergence=3
 )
 
 benchmark_status = {
-    "code_version": "v1.0.1",
+    "code_version": f"{__version__}",
     "running": False,
     "current_file": None,
     "completed": 0,

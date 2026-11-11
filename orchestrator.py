@@ -65,7 +65,6 @@ class AsyncRedisDispatcherSampler(hybrid.Runnable):
         self.realQPU = False
         if DWAVE_API_KEY:
             self.realQPU = True
-            
 
         #Istanza Redis e Coda PERSISTENTI create una sola volta
         self.r_client = redis.Redis(connection_pool=self.pool_ref, decode_responses=False)
@@ -102,35 +101,34 @@ class AsyncRedisDispatcherSampler(hybrid.Runnable):
         embedding = getattr(state, 'embedding', None)
 
         job_id = str(uuid.uuid4())
+        channel = f"job_done:{job_id}"
+        pubsub = self.r_client.pubsub()
 
         chain_strength_prefactor = None
         if self.meta is not None:
             chain_strength_prefactor = self.meta.get("chain_strength_prefactor")
-
-        #sottomissione del task alla funzione eseguita dal worker RQ
-        job = self.q.enqueue(
-            'worker.solve_subqubo_rq', 
-            args=(sub_bqm, self.target_queue, embedding, chain_strength_prefactor, self.realQPU, self.qpu_identity),
-            timeout=self.timeout,
-            result_ttl=300,  #mantengo il risultato per 300 secondi prima del cleanup
-            job_id=job_id
-        )
-
-        channel = f"job_done:{job.id}"
-        pubsub = self.r_client.pubsub()
+#
         try:
             pubsub.subscribe(channel)
-            start_time = time.time()
 
+            #prima subscribe, poi enqueue
             start_sub = time.time()
             while time.time() - start_sub < 5.0:
                 msg = pubsub.get_message(ignore_subscribe_messages=False, timeout=0.2)
-                if msg and msg['type'] == 'subscribe':
+                if msg and msg["type"] == "subscribe":
                     break
             else:
                 raise TimeoutError(f"Impossibile sottoscriversi al canale {channel}")
 
-            #rimango in attesa del messaggio di completamento
+            job = self.q.enqueue(
+                "worker.solve_subqubo_rq",
+                args=(sub_bqm, self.target_queue, embedding, chain_strength_prefactor, self.realQPU, self.qpu_identity),
+                timeout=self.timeout,
+                result_ttl=300,
+                job_id=job_id,
+            )
+
+            #attesa risultato
             start_time = time.time()
             while (time.time() - start_time) < self.timeout:
                 message = pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
@@ -163,26 +161,25 @@ class AsyncRedisDispatcherSampler(hybrid.Runnable):
 
                             if good_embedding and from_qpu:
                                 self.tp += 1
-                            if not good_embedding and from_qpu:
+                            elif not good_embedding and from_qpu:
                                 self.fp +=1
-                            if good_embedding and not from_qpu:
+                            elif good_embedding and not from_qpu:
                                 self.fn +=1
-                            if not good_embedding and not from_qpu:
+                            elif not good_embedding and not from_qpu:
                                 self.tn +=1
 
                     return state.updated(subsamples=sampleset)
+                
+            raise TimeoutError(f"Timeout RQ ({self.timeout}s) sulla coda '{self.target_queue}' per job {job.id}")
         finally:
             pubsub.close()
-
-        raise TimeoutError(f"Timeout RQ ({self.timeout}s) sulla coda '{self.target_queue}' per job {job.id}")
 
 
 
 class RouterSampler(hybrid.Runnable):
     """Router che invia i sotto-problemi a QPU o CPU in base all'embedding."""
     def __init__(
-        self, 
-        mode: str,
+        self,
         global_embedding: Dict,
         is_all_embeddable: bool,
         qpu_dispatcher: hybrid.Runnable, 
@@ -190,11 +187,10 @@ class RouterSampler(hybrid.Runnable):
         seed: int,
         target_graph=None, 
         max_chain_length: int = 7,
-        verbose: bool = 0,
+        verbose: bool = False,
         **runopts
     ):
         super().__init__(**runopts)
-        self.mode = mode
         self.target_graph = target_graph
         self.max_chain_length = max_chain_length
         self.seed = seed
@@ -245,13 +241,17 @@ class RouterSampler(hybrid.Runnable):
         ###STRATEGIA 1: Controllo nella Cache Strutturale delle iterazioni precedenti
         if embedding is None:
             with self.lock:
-                embedding = self.embedding_cache.get(cache_key)
+                cached_emb = self.embedding_cache.get(cache_key)
+                if cached_emb is not None:
+                    embedding = cached_emb
+                    computed_emb_is_all = True
 
         #STRATEGIA 2: Slicing dall'Embedding Globale (se interamente embeddabile)
-        if self.global_embedding and self.is_all_embeddable:
+        if self.global_embedding and self.is_all_embeddable and embedding is None:
             sub_emb = {v: self.global_embedding[v] for v in sub_bqm.variables if v in self.global_embedding}
             if len(sub_emb) == sub_qubo_num_vars:
                 embedding = sub_emb
+                computed_emb_is_all = True
 
         #STRATEGIA 3: Fallback su minorminer se non trovato già altrove
         if embedding is None:
@@ -355,13 +355,13 @@ class EmbeddingAwareOrchestrator:
     """Orchestratore per la risoluzione ottimizzata di problemi QUBO/BQM."""
     def __init__(
         self,
-        policy_mode: str = 'embedding_aware', 
+        policy_name: str = 'embedding_aware', 
         
         subproblem_size: Optional[int] = None,
         max_iter: int = 10,
         convergence: int = 3,
     ):
-        self.policy_mode = policy_mode
+        self.policy_name = policy_name
         self.subproblem_size = subproblem_size
         self.max_iter = max_iter
         self.convergence = convergence
@@ -453,7 +453,6 @@ class EmbeddingAwareOrchestrator:
         expansion_global = physical_nodes_global / bqm_num_vars if bqm_num_vars > 0 else 0.0
 
         router = RouterSampler(
-            mode=self.policy_mode,
             global_embedding=global_embedding,
             is_all_embeddable=is_all_embeddable,
             seed = seed,
@@ -610,18 +609,8 @@ class EmbeddingAwareOrchestrator:
                 }
 
             total_wall_clock = final_time + t_embedding
-            
-            best_energy = float(res_sampleset.first.energy)
-
-            if is_maximize:
-                best_energy = -best_energy
-
-
-            #gap rispetto a QPLIB se fornito
-            rel_gap = abs(best_energy - bestknown_solution) / abs(bestknown_solution) if bestknown_solution else None
-            abs_gap = abs(best_energy - bestknown_solution) if bestknown_solution is not None else None
-
-            best_sample = dict(res_sampleset.first.sample)
+      
+            #best_sample = dict(res_sampleset.first.sample)
 
             emb_metrics = SubQUBO.compute_advanced_embedding_metrics(global_embedding,bqm,avg_chain_break)
 
@@ -636,7 +625,16 @@ class EmbeddingAwareOrchestrator:
             cqmResults = {}
 
             if len(cqm.constraints)>0:
-                cqmResults = CqmUtilities.evaluate_cqm_feasibility(best_sample,invert_func, cqm)
+                all_samples = res_sampleset
+                cqmResults = CqmUtilities.evaluate_cqm_feasibility(all_samples,invert_func, cqm, is_maximize)
+                best_energy = cqmResults['cqm_objective_energy'] #segno già cambiato in caso di funzione obiettivo da massimizzare
+            else:
+                raw_energy = float(final_state.samples.first.energy)
+                best_energy = -raw_energy if is_maximize else raw_energy
+
+            #gap rispetto a QPLIB se fornito
+            rel_gap = abs(best_energy - bestknown_solution) / abs(bestknown_solution) if bestknown_solution else None
+            abs_gap = abs(best_energy - bestknown_solution) if bestknown_solution is not None else None
 
             results = {
                 #Routing e Policy
@@ -646,7 +644,7 @@ class EmbeddingAwareOrchestrator:
                 "avg_degree": bqm_avg_degree,
                 "density": bqm_density,
                 "is_maximization_objective": is_maximize,
-                "policy": self.policy_mode,
+                "policy": self.policy_name,
                 "qpu_calls": 1,
                 "cpu_calls": 0,
                 "qpu_utilization_ratio": 1.0,
@@ -683,6 +681,7 @@ class EmbeddingAwareOrchestrator:
 
             if verbose:
                 print(results)
+                print(f"Risoluzione terminata per {lp_filename}")
 
             return results
 
@@ -732,26 +731,25 @@ class EmbeddingAwareOrchestrator:
 
         total_sub_embedding_time = router.total_sub_embedding_time
 
-        time_total_embedding = t_embedding + total_sub_embedding_time
-
-        best_energy = float(final_state.samples.first.energy)
-
-        if is_maximize:
-            best_energy = -best_energy
-        
-        rel_gap = abs(best_energy - bestknown_solution) / abs(bestknown_solution) if bestknown_solution else None
-        abs_gap = abs(best_energy - bestknown_solution) if bestknown_solution is not None else None
+        time_total_embedding = t_embedding + total_sub_embedding_time        
 
         avg_chain_break = float(np.mean(qpu_dispatcher.chain_break_fractions)) if qpu_dispatcher.chain_break_fractions else 0.0
         total_calls = router.qpu_calls + router.cpu_calls
 
-        
-        best_sample = dict(final_state.samples.first.sample)
+        #best_sample = dict(final_state.samples.first.sample)
 
         cqmResults = {}
 
         if len(cqm.constraints)>0:
-            cqmResults = CqmUtilities.evaluate_cqm_feasibility(best_sample,invert_func, cqm)
+            all_samples = final_state.samples
+            cqmResults = CqmUtilities.evaluate_cqm_feasibility(all_samples, invert_func, cqm, is_maximize)
+            best_energy = cqmResults['cqm_objective_energy']
+        else:
+            raw_energy = float(final_state.samples.first.energy)
+            best_energy = -raw_energy if is_maximize else raw_energy
+
+        rel_gap = abs(best_energy - bestknown_solution) / abs(bestknown_solution) if bestknown_solution else None
+        abs_gap = abs(best_energy - bestknown_solution) if bestknown_solution is not None else None
 
         total_tp = cpu_dispatcher.tp + qpu_dispatcher.tp
         total_fp = cpu_dispatcher.fp + qpu_dispatcher.fp
@@ -805,7 +803,7 @@ class EmbeddingAwareOrchestrator:
             "avg_degree": bqm_avg_degree,
             "density": bqm_density,
             "is_maximization_objective": is_maximize,
-            "policy": self.policy_mode,
+            "policy": self.policy_name,
             "qpu_calls": router.qpu_calls,
             "cpu_calls": router.cpu_calls,
             "qpu_utilization_ratio": router.qpu_calls / total_calls if total_calls > 0 else 0.0,
@@ -860,6 +858,6 @@ class EmbeddingAwareOrchestrator:
 
             print("="*110)
         
-        print(f"Risoluzione terminata per {lp_filename}")
+            print(f"Risoluzione terminata per {lp_filename}")
 
         return results

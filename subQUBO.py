@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-import random
 import time
 from typing import Dict, List, Union, Optional
 import dimod

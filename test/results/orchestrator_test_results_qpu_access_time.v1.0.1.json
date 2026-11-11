@@ -1,12 +1,12 @@
 {
-    "code_version": "v1.0",
-    "timestamp_start": "2026-11-08T01:08:48.753324",
+    "code_version": "v1.0.1",
+    "timestamp_start": "2026-11-10T17:14:24.390704",
     "parameters": {
         "max_iter": 10,
         "convergence": 3,
         "num_reads": 40
     },
-    "minorminer_seed": 0,
+    "minorminer_seed": 10,
     "qplib_instances": [
         "QPLIB_3834.lp",
         "QPLIB_10073.lp",
